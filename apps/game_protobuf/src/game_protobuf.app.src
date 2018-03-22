@@ -1,12 +1,11 @@
-{application, game_server,
+{application, game_protobuf,
  [{description, "An OTP application"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, { game_server_app, []}},
+  {mod, { game_protobuf_app, []}},
   {applications,
    [kernel,
-    stdlib,
-    game_protobuf
+    stdlib
    ]},
   {env,[]},
   {modules, []},

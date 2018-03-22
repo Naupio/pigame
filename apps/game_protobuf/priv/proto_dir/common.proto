@@ -1,0 +1,6 @@
+message helloReq {
+    optional string msg = 1 ;
+}
+message worldResp {
+    optional  string msg = 1;
+}
