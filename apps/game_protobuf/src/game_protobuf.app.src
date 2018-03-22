@@ -11,6 +11,6 @@
   {modules, []},
 
   {maintainers, []},
-  {licenses, ["MIT]},
+  {licenses, ["MIT"]},
   {links, []}
  ]}.
