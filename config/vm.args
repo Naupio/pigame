@@ -1,0 +1,6 @@
+-sname game_server
+
+-setcookie game_server_cookie
+
++K true
++A30
