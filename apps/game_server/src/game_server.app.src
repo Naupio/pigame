@@ -6,7 +6,11 @@
   {applications,
    [kernel,
     stdlib,
-    game_protobuf
+    game_protobuf,
+    cowboy,
+    lager,
+    np_hook,
+    np_tcp
    ]},
   {env,[]},
   {modules, []},
