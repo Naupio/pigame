@@ -9,6 +9,7 @@
     game_protobuf,
     cowboy,
     lager,
+    gproc,
     np_hook,
     np_tcp
    ]},
