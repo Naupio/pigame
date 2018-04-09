@@ -10,11 +10,16 @@
     ,   terminate/3
     ]).
 
-init(Req, State) ->
+init(Req, _) ->
+    State = #{},
     {cowboy_websocket, Req, State}.
 
 websocket_init(State) ->
     {ok, State}.
+
+websocket_handle({text, Req}, State) ->
+    Resp = Req,
+    {reply, {text, Resp}, State};
 
 websocket_handle(_Frame, State) ->
     {ok, State}.

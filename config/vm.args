@@ -1,4 +1,4 @@
--sname game_server
+-name 'game_server@127.0.0.1'
 
 -setcookie game_server_cookie
 
