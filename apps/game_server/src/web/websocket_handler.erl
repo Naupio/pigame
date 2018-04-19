@@ -14,15 +14,18 @@ init(Req, _) ->
     State = #{ws_pid => self()},
     {cowboy_websocket, Req, State}.
 
-websocket_init(State) ->
+websocket_init(#{ws_pid := WsPid} = State) ->
+    game_debug:debug(cmd_loginfo,"wwwwwww WsPid: ~p, websocket connected   wwwwwww ~n", [WsPid]),
     {ok, State}.
 
-websocket_handle({text, Req}, State) ->
+websocket_handle({text, Req}, #{ws_pid := WsPid} = State) ->
+    game_debug:debug(cmd_loginfo,"wwwwwww WsPid: ~p, text recevie: ~p   wwwwwww ~n", [WsPid, Req]),
     Resp = Req,
     {reply, {text, Resp}, State};
 
-websocket_handle({binary, Req}, State) ->
+websocket_handle({binary, Req}, #{ws_pid := WsPid} = State) ->
     <<Cmd:16, Bin/binary>> = Req,
+    game_debug:debug(cmd_loginfo,"wwwwwww WsPid: ~p, binary recevie: ~p   wwwwwww ~n", [WsPid, Req]),
     routing:cmd_routing(Cmd, Bin, State),
     {ok, State};
 
@@ -32,8 +35,10 @@ websocket_handle(_Frame, State) ->
 websocket_info({send_binary, Resp}, State) ->
     {reply, {binary, Resp}, State};
 
-websocket_info(_Info, State) ->
+websocket_info(_Info, #{ws_pid := WsPid} = State) ->
+    game_debug:debug(cmd_loginfo,"Wwwwwwww sPid: ~p, websocket unkown info  wwwwwww ~n", [WsPid]),
     {reply, {text, <<"unkown info !">>}, State}.
 
-terminate(_Info, _Req, _State) ->
+terminate(_Info, _Req, #{ws_pid := WsPid} = _State) ->
+    game_debug:debug(cmd_loginfo,"wwwwwww WsPid: ~p, websocket terminated   wwwwwww ~n", [WsPid]),
     ok.
