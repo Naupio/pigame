@@ -24,8 +24,8 @@ websocket_handle({text, Req}, #{ws_pid := WsPid} = State) ->
     {reply, {text, Resp}, State};
 
 websocket_handle({binary, Req}, #{ws_pid := WsPid} = State) ->
-    <<Cmd:16, Bin/binary>> = Req,
     game_debug:debug(cmd_loginfo,"wwwwwww WsPid: ~p, binary recevie: ~p   wwwwwww ~n", [WsPid, Req]),
+    <<Cmd:16, Bin/binary>> = Req,
     routing:cmd_routing(Cmd, Bin, State),
     {ok, State};
 
