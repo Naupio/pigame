@@ -8,8 +8,8 @@
 
 ws_send(WsPid, RecordData) ->
     RecordName = element(1, RecordData),
-    Cmd = pb_messages:msg_code(RecordName),
-    Module = pb_messages:decoder_for(Cmd),
+    Cmd = game_massage:msg_code(RecordName),
+    Module = game_massage:decoder_for(Cmd),
     Bin = Module:encode_msg(RecordData),
     BinRecordData = <<Cmd:16, Bin/binary>>,
     game_debug:debug(cmd_loginfo,"wwwwwww WsPid: ~p, protobuf send: ~p   wwwwwww ~n", [WsPid, RecordData]),
