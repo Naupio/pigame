@@ -7,16 +7,16 @@
 
 -define(common_pb_gpb_version, "4.1.3").
 
--ifndef('HELLOREQ_PB_H').
--define('HELLOREQ_PB_H', true).
--record(helloReq,
+-ifndef('WORLDRESP_PB_H').
+-define('WORLDRESP_PB_H', true).
+-record(worldResp,
         {msg                    :: iodata() | undefined % = 1
         }).
 -endif.
 
--ifndef('WORLDRESP_PB_H').
--define('WORLDRESP_PB_H', true).
--record(worldResp,
+-ifndef('HELLOREQ_PB_H').
+-define('HELLOREQ_PB_H', true).
+-record(helloReq,
         {msg                    :: iodata() | undefined % = 1
         }).
 -endif.

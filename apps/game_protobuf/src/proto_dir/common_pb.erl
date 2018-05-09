@@ -30,15 +30,15 @@
 -export_type([]).
 
 %% message types
--type helloReq() :: #helloReq{}.
 -type worldResp() :: #worldResp{}.
--export_type(['helloReq'/0, 'worldResp'/0]).
+-type helloReq() :: #helloReq{}.
+-export_type(['worldResp'/0, 'helloReq'/0]).
 
--spec encode_msg(#helloReq{} | #worldResp{}) -> binary().
+-spec encode_msg(#worldResp{} | #helloReq{}) -> binary().
 encode_msg(Msg) -> encode_msg(Msg, []).
 
 
--spec encode_msg(#helloReq{} | #worldResp{}, list()) -> binary().
+-spec encode_msg(#worldResp{} | #helloReq{}, list()) -> binary().
 encode_msg(Msg, Opts) ->
     case proplists:get_bool(verify, Opts) of
       true -> verify_msg(Msg, Opts);
@@ -46,17 +46,18 @@ encode_msg(Msg, Opts) ->
     end,
     TrUserData = proplists:get_value(user_data, Opts),
     case Msg of
-      #helloReq{} -> e_msg_helloReq(Msg, TrUserData);
-      #worldResp{} -> e_msg_worldResp(Msg, TrUserData)
+      #worldResp{} -> e_msg_worldResp(Msg, TrUserData);
+      #helloReq{} -> e_msg_helloReq(Msg, TrUserData)
     end.
 
 
 
-e_msg_helloReq(Msg, TrUserData) ->
-    e_msg_helloReq(Msg, <<>>, TrUserData).
+e_msg_worldResp(Msg, TrUserData) ->
+    e_msg_worldResp(Msg, <<>>, TrUserData).
 
 
-e_msg_helloReq(#helloReq{msg = F1}, Bin, TrUserData) ->
+e_msg_worldResp(#worldResp{msg = F1}, Bin,
+		TrUserData) ->
     if F1 == undefined -> Bin;
        true ->
 	   begin
@@ -65,12 +66,11 @@ e_msg_helloReq(#helloReq{msg = F1}, Bin, TrUserData) ->
 	   end
     end.
 
-e_msg_worldResp(Msg, TrUserData) ->
-    e_msg_worldResp(Msg, <<>>, TrUserData).
+e_msg_helloReq(Msg, TrUserData) ->
+    e_msg_helloReq(Msg, <<>>, TrUserData).
 
 
-e_msg_worldResp(#worldResp{msg = F1}, Bin,
-		TrUserData) ->
+e_msg_helloReq(#helloReq{msg = F1}, Bin, TrUserData) ->
     if F1 == undefined -> Bin;
        true ->
 	   begin
@@ -96,14 +96,6 @@ decode_msg(Bin, MsgName) when is_binary(Bin) ->
 decode_msg(Bin, MsgName, Opts) when is_binary(Bin) ->
     TrUserData = proplists:get_value(user_data, Opts),
     case MsgName of
-      helloReq ->
-	  try d_msg_helloReq(Bin, TrUserData) catch
-	    Class:Reason ->
-		StackTrace = erlang:get_stacktrace(),
-		error({gpb_error,
-		       {decoding_failure,
-			{Bin, helloReq, {Class, Reason, StackTrace}}}})
-	  end;
       worldResp ->
 	  try d_msg_worldResp(Bin, TrUserData) catch
 	    Class:Reason ->
@@ -111,103 +103,18 @@ decode_msg(Bin, MsgName, Opts) when is_binary(Bin) ->
 		error({gpb_error,
 		       {decoding_failure,
 			{Bin, worldResp, {Class, Reason, StackTrace}}}})
+	  end;
+      helloReq ->
+	  try d_msg_helloReq(Bin, TrUserData) catch
+	    Class:Reason ->
+		StackTrace = erlang:get_stacktrace(),
+		error({gpb_error,
+		       {decoding_failure,
+			{Bin, helloReq, {Class, Reason, StackTrace}}}})
 	  end
     end.
 
 
-
-d_msg_helloReq(Bin, TrUserData) ->
-    dfp_read_field_def_helloReq(Bin, 0, 0,
-				id(undefined, TrUserData), TrUserData).
-
-dfp_read_field_def_helloReq(<<10, Rest/binary>>, Z1, Z2,
-			    F@_1, TrUserData) ->
-    d_field_helloReq_msg(Rest, Z1, Z2, F@_1, TrUserData);
-dfp_read_field_def_helloReq(<<>>, 0, 0, F@_1, _) ->
-    #helloReq{msg = F@_1};
-dfp_read_field_def_helloReq(Other, Z1, Z2, F@_1,
-			    TrUserData) ->
-    dg_read_field_def_helloReq(Other, Z1, Z2, F@_1,
-			       TrUserData).
-
-dg_read_field_def_helloReq(<<1:1, X:7, Rest/binary>>, N,
-			   Acc, F@_1, TrUserData)
-    when N < 32 - 7 ->
-    dg_read_field_def_helloReq(Rest, N + 7, X bsl N + Acc,
-			       F@_1, TrUserData);
-dg_read_field_def_helloReq(<<0:1, X:7, Rest/binary>>, N,
-			   Acc, F@_1, TrUserData) ->
-    Key = X bsl N + Acc,
-    case Key of
-      10 ->
-	  d_field_helloReq_msg(Rest, 0, 0, F@_1, TrUserData);
-      _ ->
-	  case Key band 7 of
-	    0 -> skip_varint_helloReq(Rest, 0, 0, F@_1, TrUserData);
-	    1 -> skip_64_helloReq(Rest, 0, 0, F@_1, TrUserData);
-	    2 ->
-		skip_length_delimited_helloReq(Rest, 0, 0, F@_1,
-					       TrUserData);
-	    3 ->
-		skip_group_helloReq(Rest, Key bsr 3, 0, F@_1,
-				    TrUserData);
-	    5 -> skip_32_helloReq(Rest, 0, 0, F@_1, TrUserData)
-	  end
-    end;
-dg_read_field_def_helloReq(<<>>, 0, 0, F@_1, _) ->
-    #helloReq{msg = F@_1}.
-
-d_field_helloReq_msg(<<1:1, X:7, Rest/binary>>, N, Acc,
-		     F@_1, TrUserData)
-    when N < 57 ->
-    d_field_helloReq_msg(Rest, N + 7, X bsl N + Acc, F@_1,
-			 TrUserData);
-d_field_helloReq_msg(<<0:1, X:7, Rest/binary>>, N, Acc,
-		     _, TrUserData) ->
-    {NewFValue, RestF} = begin
-			   Len = X bsl N + Acc,
-			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
-			   {binary:copy(Bytes), Rest2}
-			 end,
-    dfp_read_field_def_helloReq(RestF, 0, 0, NewFValue,
-				TrUserData).
-
-skip_varint_helloReq(<<1:1, _:7, Rest/binary>>, Z1, Z2,
-		     F@_1, TrUserData) ->
-    skip_varint_helloReq(Rest, Z1, Z2, F@_1, TrUserData);
-skip_varint_helloReq(<<0:1, _:7, Rest/binary>>, Z1, Z2,
-		     F@_1, TrUserData) ->
-    dfp_read_field_def_helloReq(Rest, Z1, Z2, F@_1,
-				TrUserData).
-
-skip_length_delimited_helloReq(<<1:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, TrUserData)
-    when N < 57 ->
-    skip_length_delimited_helloReq(Rest, N + 7,
-				   X bsl N + Acc, F@_1, TrUserData);
-skip_length_delimited_helloReq(<<0:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, TrUserData) ->
-    Length = X bsl N + Acc,
-    <<_:Length/binary, Rest2/binary>> = Rest,
-    dfp_read_field_def_helloReq(Rest2, 0, 0, F@_1,
-				TrUserData).
-
-skip_group_helloReq(Bin, FNum, Z2, F@_1, TrUserData) ->
-    {_, Rest} = read_group(Bin, FNum),
-    dfp_read_field_def_helloReq(Rest, 0, Z2, F@_1,
-				TrUserData).
-
-skip_32_helloReq(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
-		 TrUserData) ->
-    dfp_read_field_def_helloReq(Rest, Z1, Z2, F@_1,
-				TrUserData).
-
-skip_64_helloReq(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
-		 TrUserData) ->
-    dfp_read_field_def_helloReq(Rest, Z1, Z2, F@_1,
-				TrUserData).
 
 d_msg_worldResp(Bin, TrUserData) ->
     dfp_read_field_def_worldResp(Bin, 0, 0,
@@ -303,6 +210,99 @@ skip_64_worldResp(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
     dfp_read_field_def_worldResp(Rest, Z1, Z2, F@_1,
 				 TrUserData).
 
+d_msg_helloReq(Bin, TrUserData) ->
+    dfp_read_field_def_helloReq(Bin, 0, 0,
+				id(undefined, TrUserData), TrUserData).
+
+dfp_read_field_def_helloReq(<<10, Rest/binary>>, Z1, Z2,
+			    F@_1, TrUserData) ->
+    d_field_helloReq_msg(Rest, Z1, Z2, F@_1, TrUserData);
+dfp_read_field_def_helloReq(<<>>, 0, 0, F@_1, _) ->
+    #helloReq{msg = F@_1};
+dfp_read_field_def_helloReq(Other, Z1, Z2, F@_1,
+			    TrUserData) ->
+    dg_read_field_def_helloReq(Other, Z1, Z2, F@_1,
+			       TrUserData).
+
+dg_read_field_def_helloReq(<<1:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, TrUserData)
+    when N < 32 - 7 ->
+    dg_read_field_def_helloReq(Rest, N + 7, X bsl N + Acc,
+			       F@_1, TrUserData);
+dg_read_field_def_helloReq(<<0:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, TrUserData) ->
+    Key = X bsl N + Acc,
+    case Key of
+      10 ->
+	  d_field_helloReq_msg(Rest, 0, 0, F@_1, TrUserData);
+      _ ->
+	  case Key band 7 of
+	    0 -> skip_varint_helloReq(Rest, 0, 0, F@_1, TrUserData);
+	    1 -> skip_64_helloReq(Rest, 0, 0, F@_1, TrUserData);
+	    2 ->
+		skip_length_delimited_helloReq(Rest, 0, 0, F@_1,
+					       TrUserData);
+	    3 ->
+		skip_group_helloReq(Rest, Key bsr 3, 0, F@_1,
+				    TrUserData);
+	    5 -> skip_32_helloReq(Rest, 0, 0, F@_1, TrUserData)
+	  end
+    end;
+dg_read_field_def_helloReq(<<>>, 0, 0, F@_1, _) ->
+    #helloReq{msg = F@_1}.
+
+d_field_helloReq_msg(<<1:1, X:7, Rest/binary>>, N, Acc,
+		     F@_1, TrUserData)
+    when N < 57 ->
+    d_field_helloReq_msg(Rest, N + 7, X bsl N + Acc, F@_1,
+			 TrUserData);
+d_field_helloReq_msg(<<0:1, X:7, Rest/binary>>, N, Acc,
+		     _, TrUserData) ->
+    {NewFValue, RestF} = begin
+			   Len = X bsl N + Acc,
+			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
+			   {binary:copy(Bytes), Rest2}
+			 end,
+    dfp_read_field_def_helloReq(RestF, 0, 0, NewFValue,
+				TrUserData).
+
+skip_varint_helloReq(<<1:1, _:7, Rest/binary>>, Z1, Z2,
+		     F@_1, TrUserData) ->
+    skip_varint_helloReq(Rest, Z1, Z2, F@_1, TrUserData);
+skip_varint_helloReq(<<0:1, _:7, Rest/binary>>, Z1, Z2,
+		     F@_1, TrUserData) ->
+    dfp_read_field_def_helloReq(Rest, Z1, Z2, F@_1,
+				TrUserData).
+
+skip_length_delimited_helloReq(<<1:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, TrUserData)
+    when N < 57 ->
+    skip_length_delimited_helloReq(Rest, N + 7,
+				   X bsl N + Acc, F@_1, TrUserData);
+skip_length_delimited_helloReq(<<0:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, TrUserData) ->
+    Length = X bsl N + Acc,
+    <<_:Length/binary, Rest2/binary>> = Rest,
+    dfp_read_field_def_helloReq(Rest2, 0, 0, F@_1,
+				TrUserData).
+
+skip_group_helloReq(Bin, FNum, Z2, F@_1, TrUserData) ->
+    {_, Rest} = read_group(Bin, FNum),
+    dfp_read_field_def_helloReq(Rest, 0, Z2, F@_1,
+				TrUserData).
+
+skip_32_helloReq(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
+		 TrUserData) ->
+    dfp_read_field_def_helloReq(Rest, Z1, Z2, F@_1,
+				TrUserData).
+
+skip_64_helloReq(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
+		 TrUserData) ->
+    dfp_read_field_def_helloReq(Rest, Z1, Z2, F@_1,
+				TrUserData).
+
 read_group(Bin, FieldNum) ->
     {NumBytes, EndTagLen} = read_gr_b(Bin, 0, 0, 0, 0, FieldNum),
     <<Group:NumBytes/binary, _:EndTagLen/binary, Rest/binary>> = Bin,
@@ -367,18 +367,10 @@ merge_msgs(Prev, New, Opts)
     when element(1, Prev) =:= element(1, New) ->
     TrUserData = proplists:get_value(user_data, Opts),
     case Prev of
-      #helloReq{} ->
-	  merge_msg_helloReq(Prev, New, TrUserData);
       #worldResp{} ->
-	  merge_msg_worldResp(Prev, New, TrUserData)
+	  merge_msg_worldResp(Prev, New, TrUserData);
+      #helloReq{} -> merge_msg_helloReq(Prev, New, TrUserData)
     end.
-
-merge_msg_helloReq(#helloReq{msg = PFmsg},
-		   #helloReq{msg = NFmsg}, _) ->
-    #helloReq{msg =
-		  if NFmsg =:= undefined -> PFmsg;
-		     true -> NFmsg
-		  end}.
 
 merge_msg_worldResp(#worldResp{msg = PFmsg},
 		    #worldResp{msg = NFmsg}, _) ->
@@ -387,29 +379,36 @@ merge_msg_worldResp(#worldResp{msg = PFmsg},
 		      true -> NFmsg
 		   end}.
 
+merge_msg_helloReq(#helloReq{msg = PFmsg},
+		   #helloReq{msg = NFmsg}, _) ->
+    #helloReq{msg =
+		  if NFmsg =:= undefined -> PFmsg;
+		     true -> NFmsg
+		  end}.
+
 
 verify_msg(Msg) -> verify_msg(Msg, []).
 
 verify_msg(Msg, Opts) ->
     TrUserData = proplists:get_value(user_data, Opts),
     case Msg of
-      #helloReq{} ->
-	  v_msg_helloReq(Msg, [helloReq], TrUserData);
       #worldResp{} ->
 	  v_msg_worldResp(Msg, [worldResp], TrUserData);
+      #helloReq{} ->
+	  v_msg_helloReq(Msg, [helloReq], TrUserData);
       _ -> mk_type_error(not_a_known_message, Msg, [])
     end.
 
 
--dialyzer({nowarn_function,v_msg_helloReq/3}).
-v_msg_helloReq(#helloReq{msg = F1}, Path, _) ->
+-dialyzer({nowarn_function,v_msg_worldResp/3}).
+v_msg_worldResp(#worldResp{msg = F1}, Path, _) ->
     if F1 == undefined -> ok;
        true -> v_type_string(F1, [msg | Path])
     end,
     ok.
 
--dialyzer({nowarn_function,v_msg_worldResp/3}).
-v_msg_worldResp(#worldResp{msg = F1}, Path, _) ->
+-dialyzer({nowarn_function,v_msg_helloReq/3}).
+v_msg_helloReq(#helloReq{msg = F1}, Path, _) ->
     if F1 == undefined -> ok;
        true -> v_type_string(F1, [msg | Path])
     end,
@@ -448,21 +447,21 @@ id(X, _TrUserData) -> X.
 
 
 get_msg_defs() ->
-    [{{msg, helloReq},
+    [{{msg, worldResp},
       [#field{name = msg, fnum = 1, rnum = 2, type = string,
 	      occurrence = optional, opts = []}]},
-     {{msg, worldResp},
+     {{msg, helloReq},
       [#field{name = msg, fnum = 1, rnum = 2, type = string,
 	      occurrence = optional, opts = []}]}].
 
 
-get_msg_names() -> [helloReq, worldResp].
+get_msg_names() -> [worldResp, helloReq].
 
 
 get_group_names() -> [].
 
 
-get_msg_or_group_names() -> [helloReq, worldResp].
+get_msg_or_group_names() -> [worldResp, helloReq].
 
 
 get_enum_names() -> [].
@@ -480,10 +479,10 @@ fetch_enum_def(EnumName) ->
     erlang:error({no_such_enum, EnumName}).
 
 
-find_msg_def(helloReq) ->
+find_msg_def(worldResp) ->
     [#field{name = msg, fnum = 1, rnum = 2, type = string,
 	    occurrence = optional, opts = []}];
-find_msg_def(worldResp) ->
+find_msg_def(helloReq) ->
     [#field{name = msg, fnum = 1, rnum = 2, type = string,
 	    occurrence = optional, opts = []}];
 find_msg_def(_) -> error.
