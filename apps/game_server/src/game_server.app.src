@@ -6,10 +6,10 @@
   {applications,
    [kernel,
     stdlib,
+    sasl,
     game_protobuf,
-    cowboy,
     % lager,
-    gproc
+    cowboy
    ]},
   {env,[]},
   {modules, []},

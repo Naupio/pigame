@@ -2,5 +2,7 @@
 
 -setcookie game_server_cookie
 
+-boot start_sasl
+
 +K true
 +A30

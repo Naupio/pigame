@@ -12,5 +12,5 @@ ws_send(WsPid, RecordData) ->
     Module = game_massage:decoder_for(Cmd),
     Bin = Module:encode_msg(RecordData),
     BinRecordData = <<Cmd:16, Bin/binary>>,
-    game_debug:debug(cmd_loginfo,"wwwwwww WsPid: ~p, protobuf send: ~p   wwwwwww ~n", [WsPid, RecordData]),
+    game_debug:debug(error,"wwwwwww WsPid: ~p, protobuf send: ~p   wwwwwww ~n", [WsPid, RecordData]),
     WsPid ! {send_binary, BinRecordData}.

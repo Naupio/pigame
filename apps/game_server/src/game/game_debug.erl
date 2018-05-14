@@ -6,19 +6,19 @@
         debug/2, debug/3
     ]).
 
-debug(cmd, String) ->
-    io:format(String);
-debug(loginfo, String) ->
-    logger:info(String);
-debug(cmd_loginfo, String) ->
-    debug(cmd, String),
-    debug(loginfo, String).
+debug(info, String) ->
+    game_log:info(String);
+debug(error, String) ->
+    game_log:error(String);
+debug(info_error, String) ->
+    debug(info, String),
+    debug(error, String).
 
 
-debug(cmd, FormatStr, ArgsList) ->
-    io:format(FormatStr, ArgsList);
-debug(loginfo, FormatStr, ArgsList) ->
-    logger:info(FormatStr, ArgsList);
-debug(cmd_loginfo,FormatStr, ArgsList) ->
-    debug(cmd, FormatStr, ArgsList),
-    debug(loginfo, FormatStr, ArgsList).
+debug(info, FormatStr, ArgsList) ->
+    game_log:info(FormatStr, ArgsList);
+debug(error, FormatStr, ArgsList) ->
+    game_log:error(FormatStr, ArgsList);
+debug(info_error,FormatStr, ArgsList) ->
+    debug(info, FormatStr, ArgsList),
+    debug(error, FormatStr, ArgsList).
