@@ -24,7 +24,25 @@ mnesia_start() ->
     end.
 
 create_mn_table() ->
-    todo.
+    InitTL = mnesia_data:get_init_table_list(),
+    lists:foreach(fun({Name, Args}) ->
+                    mnesia:create_table(Name, Args)
+                  end, InitTL),
+    ok.
 
 check_mn_table() ->
-    todo.
+    AllExitTables = mnesia_data:get_all_exit_tables(),
+    InitTL = mnesia_data:get_init_table_list(),
+    lists:foreach(fun({Name, Args}) ->
+            case lists:member(Name, AllExitTables) of
+                true ->
+                    case mnesia:wait_for_tables([Name], 5000) of
+                        ok -> ok;
+                        Err->
+                            game_log:error("~n wait mnesia table ~p error ~p ~n", [Name, Err])
+                    end;
+                false ->
+                    mnesia:create_table(Name, Args)
+            end
+          end, InitTL),
+    ok.

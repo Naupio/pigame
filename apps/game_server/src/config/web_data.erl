@@ -1,4 +1,4 @@
--module(config_data).
+-module(web_data).
 
 -author("Nuapio Z.Y. Huang").
 

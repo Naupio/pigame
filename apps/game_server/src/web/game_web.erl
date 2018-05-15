@@ -13,7 +13,7 @@ websocket_start() ->
     Dispatch = cowboy_router:compile([
         {'_', [{"/", websocket_handler, []}]}
     ]),
-    WsPort = config_data:get_websocket_port(),
+    WsPort = web_data:get_websocket_port(),
     {ok, _} = cowboy:start_clear(websocket_handler_listener,
         [{port, WsPort}],
         #{env => #{dispatch => Dispatch}}
