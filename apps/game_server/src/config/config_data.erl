@@ -1,6 +1,6 @@
 -module(config_data).
 
--author("hzy").
+-author("Nuapio Z.Y. Huang").
 
 -export([
             get_websocket_port/0

@@ -1,6 +1,6 @@
 -module(websocket_handler).
 
--author("hzy").
+-author("Nuapio Z.Y. Huang").
 
 -export([
         init/2

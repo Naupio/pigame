@@ -7,6 +7,8 @@
 
 -behaviour(supervisor).
 
+-author("Nuapio Z.Y. Huang").
+
 %% API
 -export([start_link/0]).
 

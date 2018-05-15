@@ -5,6 +5,8 @@
 
 -module(game_server_app).
 
+-author("Nuapio Z.Y. Huang").
+
 -behaviour(application).
 
 %% Application callbacks
@@ -15,7 +17,8 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
-    ok = network_start(),
+    ok = game_web:network_start(),
+    ok = game_mnesia:mnesia_start(),
     game_server_sup:start_link().
     
 
@@ -26,18 +29,3 @@ stop(_State) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
-
-network_start() ->
-    ok = websocket_start(),
-    ok.
-
-websocket_start() ->
-    Dispatch = cowboy_router:compile([
-        {'_', [{"/", websocket_handler, []}]}
-    ]),
-    WsPort = config_data:get_websocket_port(),
-    {ok, _} = cowboy:start_clear(websocket_handler_listener,
-        [{port, WsPort}],
-        #{env => #{dispatch => Dispatch}}
-    ),
-    ok.

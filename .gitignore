@@ -19,3 +19,4 @@ rebar3.crashdump
 rebar.lock
 mf_logs/*
 !mf_logs/README.md
+Mnesia.*
