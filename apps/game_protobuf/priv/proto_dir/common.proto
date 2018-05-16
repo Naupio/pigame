@@ -4,5 +4,11 @@ message helloReq {
     optional string msg = 1 ;
 }
 message worldResp {
-    optional  string msg = 1;
+    optional string msg = 1;
+}
+
+message heartbeatReq {}
+
+message heartbeatResp {
+    optional uint32 unixtime = 1; // unix timestamp
 }

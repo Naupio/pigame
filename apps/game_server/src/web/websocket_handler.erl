@@ -18,6 +18,11 @@ websocket_init(#{ws_pid := WsPid} = State) ->
     game_debug:debug(error,"wwwwwww WsPid: ~p, websocket connected   wwwwwww ~n", [WsPid]),
     {ok, State}.
 
+websocket_handle({text, <<"@heart">>}, #{ws_pid := WsPid} = State) ->
+    game_debug:debug(error,"wwwwwww WsPid: ~p, text recevie: ~p   wwwwwww ~n", [WsPid, <<"@heart">>]),
+    Resp = integer_to_binary(game_util:unixtime()),
+    {reply, {text, Resp}, State};
+
 websocket_handle({text, Req}, #{ws_pid := WsPid} = State) ->
     game_debug:debug(error,"wwwwwww WsPid: ~p, text recevie: ~p   wwwwwww ~n", [WsPid, Req]),
     Resp = Req,
