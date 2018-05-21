@@ -9,14 +9,14 @@
     ]).
 
 %% heartbeat for keep user alive.
-handle(#heartbeatReq{}, #{ws_pid := WsPid} = _State) ->
+handle(#heartbeatReq{}, #{ws_pid := WsPid} = State) ->
     UnixTime = game_util:unixtime(),
     RecordData = #heartbeatResp{unixtime = UnixTime},
     ws_util:ws_send(WsPid, RecordData),
-    ok;
+    {noreply, State};
 
 %% Test proto for Hello World。
-handle(#helloReq{msg = OptionalString}, #{ws_pid := WsPid} = _State) ->
+handle(#helloReq{msg = OptionalString}, #{ws_pid := WsPid} = State) ->
     case OptionalString of
         undefined ->
             RecordData = #worldResp{},
@@ -25,8 +25,7 @@ handle(#helloReq{msg = OptionalString}, #{ws_pid := WsPid} = _State) ->
             RecordData = #worldResp{msg = OptionalString},
             ws_util:ws_send(WsPid, RecordData)
     end,
-    ok;
+    {noreply, State};
 
-
-handle(_Record, _State) ->
-    ok.
+handle(_Record, State) ->
+    {noreply, State}.

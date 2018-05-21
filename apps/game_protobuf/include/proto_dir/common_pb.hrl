@@ -35,4 +35,20 @@
         }).
 -endif.
 
+-ifndef('LOGINREQ_PB_H').
+-define('LOGINREQ_PB_H', true).
+-record(loginReq,
+        {cookie                 :: iodata()         % = 1
+        }).
+-endif.
+
+-ifndef('LOGINRESP_PB_H').
+-define('LOGINRESP_PB_H', true).
+-record(loginResp,
+        {result                 :: 'SUCCESED' | 'FAILED' | 'NOTFOUND' | integer(), % = 1, enum LOGINMSG
+         user_id                :: non_neg_integer() | undefined, % = 2, 32 bits
+         user_name              :: iodata() | undefined % = 3
+        }).
+-endif.
+
 -endif.

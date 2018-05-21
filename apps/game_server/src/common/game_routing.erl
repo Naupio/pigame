@@ -1,4 +1,4 @@
--module(routing).
+-module(game_routing).
 
 -author("Naupio Z.Y. Huang").
 
@@ -12,5 +12,4 @@ cmd_routing(Cmd, Bin, #{ws_pid := WsPid} = State) ->
     RecordData = Module:decode_msg(Bin, RecordName),
     game_debug:debug(error,"wwwwwww WsPid : ~p, protobuf recevie: ~p ~n  wwwwwww", [WsPid, RecordData]),
     NewModule = list_to_atom(lists:concat([hd(string:split(atom_to_list(Module),"_",trailing)), "_handler"])),
-    NewModule:handle(RecordData, State),
-    ok.
+    NewModule:handle(RecordData, State).

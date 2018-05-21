@@ -1,5 +1,26 @@
 syntax = "proto2";
 
+package common.proto;
+
+enum LOGINMSG {
+    SUCCESED = 1;
+    FAILED = 2;
+    NOTFOUND = 3;
+}
+
+message loginReq {
+    required string cookie = 1;
+}
+
+message loginResp {
+    required LOGINMSG  result = 1; 
+    optional uint64 user_id = 2;
+    optional string user_name = 3; 
+}
+
+
+// The following protocol requires login.
+
 message helloReq {
     optional string msg = 1 ;
 }

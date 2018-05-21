@@ -11,7 +11,7 @@
     ]).
 
 init(Req, _) ->
-    State = #{ws_pid => self()},
+    State = #{ws_pid => self(), logined => false, user_pid => none},
     {cowboy_websocket, Req, State}.
 
 websocket_init(#{ws_pid := WsPid} = State) ->
@@ -28,11 +28,18 @@ websocket_handle({text, Req}, #{ws_pid := WsPid} = State) ->
     Resp = Req,
     {reply, {text, Resp}, State};
 
-websocket_handle({binary, Req}, #{ws_pid := WsPid} = State) ->
+websocket_handle({binary, Req}, #{ws_pid := WsPid, logined := IsLogined} = State) ->
     game_debug:debug(error,"wwwwwww WsPid: ~p, binary recevie: ~p   wwwwwww ~n", [WsPid, Req]),
     <<Cmd:16, Bin/binary>> = Req,
-    routing:cmd_routing(Cmd, Bin, State),
-    {ok, State};
+    case IsLogined of
+        true ->
+            UserPid = maps:get(user_pid, State),
+            gen_server:cast(UserPid, {cmd_routing, Cmd, Bin, WsPid}),
+            {ok, State};
+        false ->
+            NewState = game_login:login(Cmd, Bin, State),
+            {ok, NewState}
+    end;
 
 websocket_handle(_Frame, State) ->
     {ok, State}.

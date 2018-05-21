@@ -2,5 +2,10 @@
 
 -author("Nuapio Z.Y. Huang").
 
--record(r_user, { id = 0
-                , state = #{} }).
+-record(r_unique, { unique_key, unique_value} ).
+
+-record(r_account, { user_account = ""
+                , user_id = 0 } ).
+
+-record(r_user, { user_id = 0
+                , user_state = #{} }).
