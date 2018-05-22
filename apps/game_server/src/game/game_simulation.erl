@@ -28,10 +28,10 @@ loop_receive(Cookie,UserPid,WsPid) ->
         heartbeat ->
             HeartbeatBin = common_pb:encode_msg(#heartbeatReq{}),
             gen_server:cast(UserPid, {cmd_routing, 101, HeartbeatBin}),
-            erlang:send_after(1000, self(), heartbeat),
+            erlang:send_after(5000, self(), heartbeat),
             loop_receive(Cookie,UserPid,WsPid);
         Msg ->
-            game_debug:debug(info, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: !!!!!!!!!!!!!! ~n"
+            game_debug:debug(info, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: ~p !!!!!!!!!!!!!! ~n"
                         , [Cookie, Msg, time()]),
             loop_receive(Cookie,UserPid,WsPid)
     end.
