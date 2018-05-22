@@ -12,7 +12,7 @@
 handle(#heartbeatReq{}, #{ws_pid := WsPid} = State) ->
     UnixTime = game_util:unixtime(),
     RecordData = #heartbeatResp{unixtime = UnixTime},
-    ws_util:ws_send(WsPid, RecordData),
+    game_ws_util:ws_send(WsPid, RecordData),
     {noreply, State};
 
 %% Test proto for Hello World。
@@ -20,10 +20,10 @@ handle(#helloReq{msg = OptionalString}, #{ws_pid := WsPid} = State) ->
     case OptionalString of
         undefined ->
             RecordData = #worldResp{},
-            ws_util:ws_send(WsPid, RecordData);
+            game_ws_util:ws_send(WsPid, RecordData);
         _ ->
             RecordData = #worldResp{msg = OptionalString},
-            ws_util:ws_send(WsPid, RecordData)
+            game_ws_util:ws_send(WsPid, RecordData)
     end,
     {noreply, State};
 

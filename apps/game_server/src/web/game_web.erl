@@ -11,7 +11,7 @@ network_start() ->
 
 websocket_start() ->
     Dispatch = cowboy_router:compile([
-        {'_', [{"/", websocket_handler, []}]}
+        {'_', [{"/", game_ws_handler, []}]}
     ]),
     WsPort = web_data:get_websocket_port(),
     {ok, _} = cowboy:start_clear(websocket_handler_listener,

@@ -30,7 +30,16 @@ start_link() ->
 
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-    {ok, { {one_for_one, 10, 1}, []} }.
+    {ok, { {one_for_one, 10, 1}, [
+                    #{
+                        id => game_role_sup,
+                        start => {game_role_sup, start_link, []},
+                        restart => permanent,
+                        shudown => 30000,
+                        type => supervisor,
+                        modules => [game_role_sup]
+                     }
+                    ]} }.
 
 %%====================================================================
 %% Internal functions

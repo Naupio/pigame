@@ -1,4 +1,4 @@
--module(ws_util).
+-module(game_ws_util).
 
 -author("Naupio Z.Y. Huang").
 

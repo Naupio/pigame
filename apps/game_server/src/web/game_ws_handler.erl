@@ -1,4 +1,4 @@
--module(websocket_handler).
+-module(game_ws_handler).
 
 -author("Nuapio Z.Y. Huang").
 

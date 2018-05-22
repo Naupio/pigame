@@ -22,7 +22,7 @@
   {git,"https://github.com/ninenines/ranch",
        {ref,"8eaae552ec520605b7f4b0e5943256d2b5e3621c"}},
   1},
- {<<"recon">>,
+ {<<"recen">>,
   {git,"https://github.com/ferd/recon",
        {ref,"e0c3614334589e375f8b1492f404e4b764fe35e7"}},
   0}].
