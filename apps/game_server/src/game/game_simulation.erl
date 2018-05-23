@@ -1,4 +1,7 @@
 -module(game_simulation).
+
+-author("Naupio Z.Y. Huang").
+
 -include("common_pb.hrl").
 
 -export([   

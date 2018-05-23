@@ -16,7 +16,7 @@ terminate/2, code_change/3]).
 -define(SAVE_TIME, 5000).
 
 start_link([UserId, WsPid]) ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [UserId, WsPid], []).
+    gen_server:start_link(?MODULE, [UserId, WsPid], []).
 
 init([UserId, WsPid]) ->
     State = game_mn:get_user_state(UserId),

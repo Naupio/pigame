@@ -11,12 +11,14 @@
     , get_user_state/1
 ]).
 
+-define(default_id_start, 10000).
+
 get_user_id_by_account(Cookie) ->
     case catch mnesia:dirty_read(r_account, Cookie) of
         [#r_account{user_account = Cookie, user_id = UserId}|_] ->
             UserId;
         _ -> 
-            UserId = mnesia:dirty_update_counter(r_unique, r_user, 1000),  
+            UserId = ?default_id_start + mnesia:dirty_update_counter(r_unique, r_user, 1),  
             put_user_id_by_account(Cookie, UserId),
             UserId
     end.
