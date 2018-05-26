@@ -8,10 +8,11 @@
     login/3
 ]).
 
-login(Cmd, Bin, WsState) ->
+login(Cmd, Bin, #{ws_pid := WsPid} = WsState) ->
     Module = game_massage:decoder_for(Cmd),
     RecordName = game_massage:msg_type(Cmd),
     RecordData = Module:decode_msg(Bin, RecordName),
+    game_debug:debug(error,"wwwwwww WsPid : ~p, protobuf recevie: ~p ~n  wwwwwww", [WsPid, RecordData]),
     NewWsState = login_handler(RecordData, WsState),
     NewWsState.
 

@@ -11,12 +11,14 @@
     ]).
 
 init(Req, _) ->
-    State = #{ws_pid => self(), logined => false, user_pid => none},
+    State = #{ws_pid => none, logined => false, user_pid => none},
     {cowboy_websocket, Req, State}.
 
-websocket_init(#{ws_pid := WsPid} = State) ->
+websocket_init(State) ->
+    WsPid = self(),
     game_debug:debug(error,"wwwwwww WsPid: ~p, websocket connected   wwwwwww ~n", [WsPid]),
-    {ok, State}.
+    NewState = State#{ws_pid := WsPid},
+    {ok, NewState}.
 
 websocket_handle({text, <<"@heart">>}, #{ws_pid := WsPid} = State) ->
     game_debug:debug(error,"wwwwwww WsPid: ~p, text recevie: ~p   wwwwwww ~n", [WsPid, <<"@heart">>]),
@@ -28,13 +30,12 @@ websocket_handle({text, Req}, #{ws_pid := WsPid} = State) ->
     Resp = Req,
     {reply, {text, Resp}, State};
 
-websocket_handle({binary, Req}, #{ws_pid := WsPid, logined := IsLogined} = State) ->
-    game_debug:debug(error,"wwwwwww WsPid: ~p, binary recevie: ~p   wwwwwww ~n", [WsPid, Req]),
+websocket_handle({binary, Req}, #{logined := IsLogined} = State) ->
     <<Cmd:16, Bin/binary>> = Req,
     case IsLogined of
         true ->
             UserPid = maps:get(user_pid, State),
-            gen_server:cast(UserPid, {cmd_routing, Cmd, Bin, WsPid}),
+            gen_server:cast(UserPid, {cmd_routing, Cmd, Bin}),
             {ok, State};
         false ->
             NewState = game_login:login(Cmd, Bin, State),
@@ -48,9 +49,17 @@ websocket_info({send_binary, Resp}, State) ->
     {reply, {binary, Resp}, State};
 
 websocket_info(_Info, #{ws_pid := WsPid} = State) ->
-    game_debug:debug(error,"Wwwwwwww sPid: ~p, websocket unkown info  wwwwwww ~n", [WsPid]),
+    game_debug:debug(error,"Wwwwwwww WsPid: ~p, websocket unkown info  wwwwwww ~n", [WsPid]),
     {reply, {text, <<"unkown info !">>}, State}.
 
-terminate(_Info, _Req, #{ws_pid := WsPid} = _State) ->
+terminate(_Info, _Req, #{ws_pid := WsPid, user_pid := UserPid, logined := IsLogined} = _State) ->
+    case {IsLogined, is_pid(UserPid)} of
+        {true,true} ->
+            case is_process_alive(UserPid) of
+                true -> exit(UserPid, normal);
+                _ -> notdoing
+            end;
+        _ -> notdoing
+    end, 
     game_debug:debug(error,"wwwwwww WsPid: ~p, websocket terminated   wwwwwww ~n", [WsPid]),
     ok.

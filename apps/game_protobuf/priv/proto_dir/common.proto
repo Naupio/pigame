@@ -19,7 +19,7 @@ message loginResp {
 }
 
 
-// The following protocol requires login.
+// The following protocol is requiring loginned.
 
 message helloReq {
     optional string msg = 1 ;

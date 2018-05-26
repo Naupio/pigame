@@ -7,24 +7,12 @@
 
 -define(common_pb_gpb_version, "4.1.6").
 
--ifndef('HEARTBEATREQ_PB_H').
--define('HEARTBEATREQ_PB_H', true).
--record(heartbeatReq,
-        {
-        }).
--endif.
-
--ifndef('HELLOREQ_PB_H').
--define('HELLOREQ_PB_H', true).
--record(helloReq,
-        {msg                    :: iodata() | undefined % = 1
-        }).
--endif.
-
--ifndef('HEARTBEATRESP_PB_H').
--define('HEARTBEATRESP_PB_H', true).
--record(heartbeatResp,
-        {unixtime               :: non_neg_integer() | undefined % = 1, 32 bits
+-ifndef('LOGINRESP_PB_H').
+-define('LOGINRESP_PB_H', true).
+-record(loginResp,
+        {result                 :: 'SUCCESED' | 'FAILED' | 'NOTFOUND' | integer(), % = 1, enum LOGINMSG
+         user_id                :: non_neg_integer() | undefined, % = 2, 32 bits
+         user_name              :: iodata() | undefined % = 3
         }).
 -endif.
 
@@ -42,12 +30,24 @@
         }).
 -endif.
 
--ifndef('LOGINRESP_PB_H').
--define('LOGINRESP_PB_H', true).
--record(loginResp,
-        {result                 :: 'SUCCESED' | 'FAILED' | 'NOTFOUND' | integer(), % = 1, enum LOGINMSG
-         user_id                :: non_neg_integer() | undefined, % = 2, 32 bits
-         user_name              :: iodata() | undefined % = 3
+-ifndef('HELLOREQ_PB_H').
+-define('HELLOREQ_PB_H', true).
+-record(helloReq,
+        {msg                    :: iodata() | undefined % = 1
+        }).
+-endif.
+
+-ifndef('HEARTBEATRESP_PB_H').
+-define('HEARTBEATRESP_PB_H', true).
+-record(heartbeatResp,
+        {unixtime               :: non_neg_integer() | undefined % = 1, 32 bits
+        }).
+-endif.
+
+-ifndef('HEARTBEATREQ_PB_H').
+-define('HEARTBEATREQ_PB_H', true).
+-record(heartbeatReq,
+        {
         }).
 -endif.
 

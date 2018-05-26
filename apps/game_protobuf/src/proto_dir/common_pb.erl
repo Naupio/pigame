@@ -31,19 +31,19 @@
 -export_type(['LOGINMSG'/0]).
 
 %% message types
--type heartbeatReq() :: #heartbeatReq{}.
--type helloReq() :: #helloReq{}.
--type heartbeatResp() :: #heartbeatResp{}.
+-type loginResp() :: #loginResp{}.
 -type worldResp() :: #worldResp{}.
 -type loginReq() :: #loginReq{}.
--type loginResp() :: #loginResp{}.
--export_type(['heartbeatReq'/0, 'helloReq'/0, 'heartbeatResp'/0, 'worldResp'/0, 'loginReq'/0, 'loginResp'/0]).
+-type helloReq() :: #helloReq{}.
+-type heartbeatResp() :: #heartbeatResp{}.
+-type heartbeatReq() :: #heartbeatReq{}.
+-export_type(['loginResp'/0, 'worldResp'/0, 'loginReq'/0, 'helloReq'/0, 'heartbeatResp'/0, 'heartbeatReq'/0]).
 
--spec encode_msg(#heartbeatReq{} | #helloReq{} | #heartbeatResp{} | #worldResp{} | #loginReq{} | #loginResp{}) -> binary().
+-spec encode_msg(#loginResp{} | #worldResp{} | #loginReq{} | #helloReq{} | #heartbeatResp{} | #heartbeatReq{}) -> binary().
 encode_msg(Msg) -> encode_msg(Msg, []).
 
 
--spec encode_msg(#heartbeatReq{} | #helloReq{} | #heartbeatResp{} | #worldResp{} | #loginReq{} | #loginResp{}, list()) -> binary().
+-spec encode_msg(#loginResp{} | #worldResp{} | #loginReq{} | #helloReq{} | #heartbeatResp{} | #heartbeatReq{}, list()) -> binary().
 encode_msg(Msg, Opts) ->
     case proplists:get_bool(verify, Opts) of
       true -> verify_msg(Msg, Opts);
@@ -51,43 +51,40 @@ encode_msg(Msg, Opts) ->
     end,
     TrUserData = proplists:get_value(user_data, Opts),
     case Msg of
-      #heartbeatReq{} -> e_msg_heartbeatReq(Msg, TrUserData);
+      #loginResp{} -> e_msg_loginResp(Msg, TrUserData);
+      #worldResp{} -> e_msg_worldResp(Msg, TrUserData);
+      #loginReq{} -> e_msg_loginReq(Msg, TrUserData);
       #helloReq{} -> e_msg_helloReq(Msg, TrUserData);
       #heartbeatResp{} ->
 	  e_msg_heartbeatResp(Msg, TrUserData);
-      #worldResp{} -> e_msg_worldResp(Msg, TrUserData);
-      #loginReq{} -> e_msg_loginReq(Msg, TrUserData);
-      #loginResp{} -> e_msg_loginResp(Msg, TrUserData)
+      #heartbeatReq{} -> e_msg_heartbeatReq(Msg, TrUserData)
     end.
 
 
 
-e_msg_heartbeatReq(_Msg, _TrUserData) -> <<>>.
-
-e_msg_helloReq(Msg, TrUserData) ->
-    e_msg_helloReq(Msg, <<>>, TrUserData).
+e_msg_loginResp(Msg, TrUserData) ->
+    e_msg_loginResp(Msg, <<>>, TrUserData).
 
 
-e_msg_helloReq(#helloReq{msg = F1}, Bin, TrUserData) ->
-    if F1 == undefined -> Bin;
+e_msg_loginResp(#loginResp{result = F1, user_id = F2,
+			   user_name = F3},
+		Bin, TrUserData) ->
+    B1 = begin
+	   TrF1 = id(F1, TrUserData),
+	   e_enum_LOGINMSG(TrF1, <<Bin/binary, 8>>)
+	 end,
+    B2 = if F2 == undefined -> B1;
+	    true ->
+		begin
+		  TrF2 = id(F2, TrUserData),
+		  e_varint(TrF2, <<B1/binary, 16>>)
+		end
+	 end,
+    if F3 == undefined -> B2;
        true ->
 	   begin
-	     TrF1 = id(F1, TrUserData),
-	     e_type_string(TrF1, <<Bin/binary, 10>>)
-	   end
-    end.
-
-e_msg_heartbeatResp(Msg, TrUserData) ->
-    e_msg_heartbeatResp(Msg, <<>>, TrUserData).
-
-
-e_msg_heartbeatResp(#heartbeatResp{unixtime = F1}, Bin,
-		    TrUserData) ->
-    if F1 == undefined -> Bin;
-       true ->
-	   begin
-	     TrF1 = id(F1, TrUserData),
-	     e_varint(TrF1, <<Bin/binary, 8>>)
+	     TrF3 = id(F3, TrUserData),
+	     e_type_string(TrF3, <<B2/binary, 26>>)
 	   end
     end.
 
@@ -116,31 +113,34 @@ e_msg_loginReq(#loginReq{cookie = F1}, Bin,
       e_type_string(TrF1, <<Bin/binary, 10>>)
     end.
 
-e_msg_loginResp(Msg, TrUserData) ->
-    e_msg_loginResp(Msg, <<>>, TrUserData).
+e_msg_helloReq(Msg, TrUserData) ->
+    e_msg_helloReq(Msg, <<>>, TrUserData).
 
 
-e_msg_loginResp(#loginResp{result = F1, user_id = F2,
-			   user_name = F3},
-		Bin, TrUserData) ->
-    B1 = begin
-	   TrF1 = id(F1, TrUserData),
-	   e_enum_LOGINMSG(TrF1, <<Bin/binary, 8>>)
-	 end,
-    B2 = if F2 == undefined -> B1;
-	    true ->
-		begin
-		  TrF2 = id(F2, TrUserData),
-		  e_varint(TrF2, <<B1/binary, 16>>)
-		end
-	 end,
-    if F3 == undefined -> B2;
+e_msg_helloReq(#helloReq{msg = F1}, Bin, TrUserData) ->
+    if F1 == undefined -> Bin;
        true ->
 	   begin
-	     TrF3 = id(F3, TrUserData),
-	     e_type_string(TrF3, <<B2/binary, 26>>)
+	     TrF1 = id(F1, TrUserData),
+	     e_type_string(TrF1, <<Bin/binary, 10>>)
 	   end
     end.
+
+e_msg_heartbeatResp(Msg, TrUserData) ->
+    e_msg_heartbeatResp(Msg, <<>>, TrUserData).
+
+
+e_msg_heartbeatResp(#heartbeatResp{unixtime = F1}, Bin,
+		    TrUserData) ->
+    if F1 == undefined -> Bin;
+       true ->
+	   begin
+	     TrF1 = id(F1, TrUserData),
+	     e_varint(TrF1, <<Bin/binary, 8>>)
+	   end
+    end.
+
+e_msg_heartbeatReq(_Msg, _TrUserData) -> <<>>.
 
 e_enum_LOGINMSG('SUCCESED', Bin) -> <<Bin/binary, 1>>;
 e_enum_LOGINMSG('FAILED', Bin) -> <<Bin/binary, 2>>;
@@ -179,90 +179,360 @@ decode_msg_1_catch(Bin, MsgName, TrUserData) ->
     end.
 -endif.
 
-decode_msg_2_doit(heartbeatReq, Bin, TrUserData) ->
-    d_msg_heartbeatReq(Bin, TrUserData);
-decode_msg_2_doit(helloReq, Bin, TrUserData) ->
-    d_msg_helloReq(Bin, TrUserData);
-decode_msg_2_doit(heartbeatResp, Bin, TrUserData) ->
-    d_msg_heartbeatResp(Bin, TrUserData);
+decode_msg_2_doit(loginResp, Bin, TrUserData) ->
+    d_msg_loginResp(Bin, TrUserData);
 decode_msg_2_doit(worldResp, Bin, TrUserData) ->
     d_msg_worldResp(Bin, TrUserData);
 decode_msg_2_doit(loginReq, Bin, TrUserData) ->
     d_msg_loginReq(Bin, TrUserData);
-decode_msg_2_doit(loginResp, Bin, TrUserData) ->
-    d_msg_loginResp(Bin, TrUserData).
+decode_msg_2_doit(helloReq, Bin, TrUserData) ->
+    d_msg_helloReq(Bin, TrUserData);
+decode_msg_2_doit(heartbeatResp, Bin, TrUserData) ->
+    d_msg_heartbeatResp(Bin, TrUserData);
+decode_msg_2_doit(heartbeatReq, Bin, TrUserData) ->
+    d_msg_heartbeatReq(Bin, TrUserData).
 
 
 
-d_msg_heartbeatReq(Bin, TrUserData) ->
-    dfp_read_field_def_heartbeatReq(Bin, 0, 0, TrUserData).
+d_msg_loginResp(Bin, TrUserData) ->
+    dfp_read_field_def_loginResp(Bin, 0, 0,
+				 id(undefined, TrUserData),
+				 id(undefined, TrUserData),
+				 id(undefined, TrUserData), TrUserData).
 
-dfp_read_field_def_heartbeatReq(<<>>, 0, 0, _) ->
-    #heartbeatReq{};
-dfp_read_field_def_heartbeatReq(Other, Z1, Z2,
-				TrUserData) ->
-    dg_read_field_def_heartbeatReq(Other, Z1, Z2,
-				   TrUserData).
+dfp_read_field_def_loginResp(<<8, Rest/binary>>, Z1, Z2,
+			     F@_1, F@_2, F@_3, TrUserData) ->
+    d_field_loginResp_result(Rest, Z1, Z2, F@_1, F@_2, F@_3,
+			     TrUserData);
+dfp_read_field_def_loginResp(<<16, Rest/binary>>, Z1,
+			     Z2, F@_1, F@_2, F@_3, TrUserData) ->
+    d_field_loginResp_user_id(Rest, Z1, Z2, F@_1, F@_2,
+			      F@_3, TrUserData);
+dfp_read_field_def_loginResp(<<26, Rest/binary>>, Z1,
+			     Z2, F@_1, F@_2, F@_3, TrUserData) ->
+    d_field_loginResp_user_name(Rest, Z1, Z2, F@_1, F@_2,
+				F@_3, TrUserData);
+dfp_read_field_def_loginResp(<<>>, 0, 0, F@_1, F@_2,
+			     F@_3, _) ->
+    #loginResp{result = F@_1, user_id = F@_2,
+	       user_name = F@_3};
+dfp_read_field_def_loginResp(Other, Z1, Z2, F@_1, F@_2,
+			     F@_3, TrUserData) ->
+    dg_read_field_def_loginResp(Other, Z1, Z2, F@_1, F@_2,
+				F@_3, TrUserData).
 
-dg_read_field_def_heartbeatReq(<<1:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, TrUserData)
+dg_read_field_def_loginResp(<<1:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, F@_3, TrUserData)
     when N < 32 - 7 ->
-    dg_read_field_def_heartbeatReq(Rest, N + 7,
-				   X bsl N + Acc, TrUserData);
-dg_read_field_def_heartbeatReq(<<0:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, TrUserData) ->
+    dg_read_field_def_loginResp(Rest, N + 7, X bsl N + Acc,
+				F@_1, F@_2, F@_3, TrUserData);
+dg_read_field_def_loginResp(<<0:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, F@_3, TrUserData) ->
     Key = X bsl N + Acc,
-    case Key band 7 of
-      0 -> skip_varint_heartbeatReq(Rest, 0, 0, TrUserData);
-      1 -> skip_64_heartbeatReq(Rest, 0, 0, TrUserData);
-      2 ->
-	  skip_length_delimited_heartbeatReq(Rest, 0, 0,
-					     TrUserData);
-      3 ->
-	  skip_group_heartbeatReq(Rest, Key bsr 3, 0, TrUserData);
-      5 -> skip_32_heartbeatReq(Rest, 0, 0, TrUserData)
+    case Key of
+      8 ->
+	  d_field_loginResp_result(Rest, 0, 0, F@_1, F@_2, F@_3,
+				   TrUserData);
+      16 ->
+	  d_field_loginResp_user_id(Rest, 0, 0, F@_1, F@_2, F@_3,
+				    TrUserData);
+      26 ->
+	  d_field_loginResp_user_name(Rest, 0, 0, F@_1, F@_2,
+				      F@_3, TrUserData);
+      _ ->
+	  case Key band 7 of
+	    0 ->
+		skip_varint_loginResp(Rest, 0, 0, F@_1, F@_2, F@_3,
+				      TrUserData);
+	    1 ->
+		skip_64_loginResp(Rest, 0, 0, F@_1, F@_2, F@_3,
+				  TrUserData);
+	    2 ->
+		skip_length_delimited_loginResp(Rest, 0, 0, F@_1, F@_2,
+						F@_3, TrUserData);
+	    3 ->
+		skip_group_loginResp(Rest, Key bsr 3, 0, F@_1, F@_2,
+				     F@_3, TrUserData);
+	    5 ->
+		skip_32_loginResp(Rest, 0, 0, F@_1, F@_2, F@_3,
+				  TrUserData)
+	  end
     end;
-dg_read_field_def_heartbeatReq(<<>>, 0, 0, _) ->
-    #heartbeatReq{}.
+dg_read_field_def_loginResp(<<>>, 0, 0, F@_1, F@_2,
+			    F@_3, _) ->
+    #loginResp{result = F@_1, user_id = F@_2,
+	       user_name = F@_3}.
 
-skip_varint_heartbeatReq(<<1:1, _:7, Rest/binary>>, Z1,
-			 Z2, TrUserData) ->
-    skip_varint_heartbeatReq(Rest, Z1, Z2, TrUserData);
-skip_varint_heartbeatReq(<<0:1, _:7, Rest/binary>>, Z1,
-			 Z2, TrUserData) ->
-    dfp_read_field_def_heartbeatReq(Rest, Z1, Z2,
-				    TrUserData).
-
-skip_length_delimited_heartbeatReq(<<1:1, X:7,
-				     Rest/binary>>,
-				   N, Acc, TrUserData)
+d_field_loginResp_result(<<1:1, X:7, Rest/binary>>, N,
+			 Acc, F@_1, F@_2, F@_3, TrUserData)
     when N < 57 ->
-    skip_length_delimited_heartbeatReq(Rest, N + 7,
-				       X bsl N + Acc, TrUserData);
-skip_length_delimited_heartbeatReq(<<0:1, X:7,
-				     Rest/binary>>,
-				   N, Acc, TrUserData) ->
+    d_field_loginResp_result(Rest, N + 7, X bsl N + Acc,
+			     F@_1, F@_2, F@_3, TrUserData);
+d_field_loginResp_result(<<0:1, X:7, Rest/binary>>, N,
+			 Acc, _, F@_2, F@_3, TrUserData) ->
+    {NewFValue, RestF} = {d_enum_LOGINMSG(begin
+					    <<Res:32/signed-native>> = <<(X bsl
+									    N
+									    +
+									    Acc):32/unsigned-native>>,
+					    Res
+					  end),
+			  Rest},
+    dfp_read_field_def_loginResp(RestF, 0, 0, NewFValue,
+				 F@_2, F@_3, TrUserData).
+
+d_field_loginResp_user_id(<<1:1, X:7, Rest/binary>>, N,
+			  Acc, F@_1, F@_2, F@_3, TrUserData)
+    when N < 57 ->
+    d_field_loginResp_user_id(Rest, N + 7, X bsl N + Acc,
+			      F@_1, F@_2, F@_3, TrUserData);
+d_field_loginResp_user_id(<<0:1, X:7, Rest/binary>>, N,
+			  Acc, F@_1, _, F@_3, TrUserData) ->
+    {NewFValue, RestF} = {X bsl N + Acc, Rest},
+    dfp_read_field_def_loginResp(RestF, 0, 0, F@_1,
+				 NewFValue, F@_3, TrUserData).
+
+d_field_loginResp_user_name(<<1:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, F@_3, TrUserData)
+    when N < 57 ->
+    d_field_loginResp_user_name(Rest, N + 7, X bsl N + Acc,
+				F@_1, F@_2, F@_3, TrUserData);
+d_field_loginResp_user_name(<<0:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, _, TrUserData) ->
+    {NewFValue, RestF} = begin
+			   Len = X bsl N + Acc,
+			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
+			   {binary:copy(Bytes), Rest2}
+			 end,
+    dfp_read_field_def_loginResp(RestF, 0, 0, F@_1, F@_2,
+				 NewFValue, TrUserData).
+
+skip_varint_loginResp(<<1:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, F@_3, TrUserData) ->
+    skip_varint_loginResp(Rest, Z1, Z2, F@_1, F@_2, F@_3,
+			  TrUserData);
+skip_varint_loginResp(<<0:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, F@_3, TrUserData) ->
+    dfp_read_field_def_loginResp(Rest, Z1, Z2, F@_1, F@_2,
+				 F@_3, TrUserData).
+
+skip_length_delimited_loginResp(<<1:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, F@_3, TrUserData)
+    when N < 57 ->
+    skip_length_delimited_loginResp(Rest, N + 7,
+				    X bsl N + Acc, F@_1, F@_2, F@_3,
+				    TrUserData);
+skip_length_delimited_loginResp(<<0:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, F@_3, TrUserData) ->
     Length = X bsl N + Acc,
     <<_:Length/binary, Rest2/binary>> = Rest,
-    dfp_read_field_def_heartbeatReq(Rest2, 0, 0,
-				    TrUserData).
+    dfp_read_field_def_loginResp(Rest2, 0, 0, F@_1, F@_2,
+				 F@_3, TrUserData).
 
-skip_group_heartbeatReq(Bin, FNum, Z2, TrUserData) ->
+skip_group_loginResp(Bin, FNum, Z2, F@_1, F@_2, F@_3,
+		     TrUserData) ->
     {_, Rest} = read_group(Bin, FNum),
-    dfp_read_field_def_heartbeatReq(Rest, 0, Z2,
-				    TrUserData).
+    dfp_read_field_def_loginResp(Rest, 0, Z2, F@_1, F@_2,
+				 F@_3, TrUserData).
 
-skip_32_heartbeatReq(<<_:32, Rest/binary>>, Z1, Z2,
-		     TrUserData) ->
-    dfp_read_field_def_heartbeatReq(Rest, Z1, Z2,
-				    TrUserData).
+skip_32_loginResp(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, F@_3, TrUserData) ->
+    dfp_read_field_def_loginResp(Rest, Z1, Z2, F@_1, F@_2,
+				 F@_3, TrUserData).
 
-skip_64_heartbeatReq(<<_:64, Rest/binary>>, Z1, Z2,
-		     TrUserData) ->
-    dfp_read_field_def_heartbeatReq(Rest, Z1, Z2,
-				    TrUserData).
+skip_64_loginResp(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, F@_3, TrUserData) ->
+    dfp_read_field_def_loginResp(Rest, Z1, Z2, F@_1, F@_2,
+				 F@_3, TrUserData).
+
+d_msg_worldResp(Bin, TrUserData) ->
+    dfp_read_field_def_worldResp(Bin, 0, 0,
+				 id(undefined, TrUserData), TrUserData).
+
+dfp_read_field_def_worldResp(<<10, Rest/binary>>, Z1,
+			     Z2, F@_1, TrUserData) ->
+    d_field_worldResp_msg(Rest, Z1, Z2, F@_1, TrUserData);
+dfp_read_field_def_worldResp(<<>>, 0, 0, F@_1, _) ->
+    #worldResp{msg = F@_1};
+dfp_read_field_def_worldResp(Other, Z1, Z2, F@_1,
+			     TrUserData) ->
+    dg_read_field_def_worldResp(Other, Z1, Z2, F@_1,
+				TrUserData).
+
+dg_read_field_def_worldResp(<<1:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, TrUserData)
+    when N < 32 - 7 ->
+    dg_read_field_def_worldResp(Rest, N + 7, X bsl N + Acc,
+				F@_1, TrUserData);
+dg_read_field_def_worldResp(<<0:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, TrUserData) ->
+    Key = X bsl N + Acc,
+    case Key of
+      10 ->
+	  d_field_worldResp_msg(Rest, 0, 0, F@_1, TrUserData);
+      _ ->
+	  case Key band 7 of
+	    0 ->
+		skip_varint_worldResp(Rest, 0, 0, F@_1, TrUserData);
+	    1 -> skip_64_worldResp(Rest, 0, 0, F@_1, TrUserData);
+	    2 ->
+		skip_length_delimited_worldResp(Rest, 0, 0, F@_1,
+						TrUserData);
+	    3 ->
+		skip_group_worldResp(Rest, Key bsr 3, 0, F@_1,
+				     TrUserData);
+	    5 -> skip_32_worldResp(Rest, 0, 0, F@_1, TrUserData)
+	  end
+    end;
+dg_read_field_def_worldResp(<<>>, 0, 0, F@_1, _) ->
+    #worldResp{msg = F@_1}.
+
+d_field_worldResp_msg(<<1:1, X:7, Rest/binary>>, N, Acc,
+		      F@_1, TrUserData)
+    when N < 57 ->
+    d_field_worldResp_msg(Rest, N + 7, X bsl N + Acc, F@_1,
+			  TrUserData);
+d_field_worldResp_msg(<<0:1, X:7, Rest/binary>>, N, Acc,
+		      _, TrUserData) ->
+    {NewFValue, RestF} = begin
+			   Len = X bsl N + Acc,
+			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
+			   {binary:copy(Bytes), Rest2}
+			 end,
+    dfp_read_field_def_worldResp(RestF, 0, 0, NewFValue,
+				 TrUserData).
+
+skip_varint_worldResp(<<1:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, TrUserData) ->
+    skip_varint_worldResp(Rest, Z1, Z2, F@_1, TrUserData);
+skip_varint_worldResp(<<0:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, TrUserData) ->
+    dfp_read_field_def_worldResp(Rest, Z1, Z2, F@_1,
+				 TrUserData).
+
+skip_length_delimited_worldResp(<<1:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, TrUserData)
+    when N < 57 ->
+    skip_length_delimited_worldResp(Rest, N + 7,
+				    X bsl N + Acc, F@_1, TrUserData);
+skip_length_delimited_worldResp(<<0:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, TrUserData) ->
+    Length = X bsl N + Acc,
+    <<_:Length/binary, Rest2/binary>> = Rest,
+    dfp_read_field_def_worldResp(Rest2, 0, 0, F@_1,
+				 TrUserData).
+
+skip_group_worldResp(Bin, FNum, Z2, F@_1, TrUserData) ->
+    {_, Rest} = read_group(Bin, FNum),
+    dfp_read_field_def_worldResp(Rest, 0, Z2, F@_1,
+				 TrUserData).
+
+skip_32_worldResp(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
+		  TrUserData) ->
+    dfp_read_field_def_worldResp(Rest, Z1, Z2, F@_1,
+				 TrUserData).
+
+skip_64_worldResp(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
+		  TrUserData) ->
+    dfp_read_field_def_worldResp(Rest, Z1, Z2, F@_1,
+				 TrUserData).
+
+d_msg_loginReq(Bin, TrUserData) ->
+    dfp_read_field_def_loginReq(Bin, 0, 0,
+				id(undefined, TrUserData), TrUserData).
+
+dfp_read_field_def_loginReq(<<10, Rest/binary>>, Z1, Z2,
+			    F@_1, TrUserData) ->
+    d_field_loginReq_cookie(Rest, Z1, Z2, F@_1, TrUserData);
+dfp_read_field_def_loginReq(<<>>, 0, 0, F@_1, _) ->
+    #loginReq{cookie = F@_1};
+dfp_read_field_def_loginReq(Other, Z1, Z2, F@_1,
+			    TrUserData) ->
+    dg_read_field_def_loginReq(Other, Z1, Z2, F@_1,
+			       TrUserData).
+
+dg_read_field_def_loginReq(<<1:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, TrUserData)
+    when N < 32 - 7 ->
+    dg_read_field_def_loginReq(Rest, N + 7, X bsl N + Acc,
+			       F@_1, TrUserData);
+dg_read_field_def_loginReq(<<0:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, TrUserData) ->
+    Key = X bsl N + Acc,
+    case Key of
+      10 ->
+	  d_field_loginReq_cookie(Rest, 0, 0, F@_1, TrUserData);
+      _ ->
+	  case Key band 7 of
+	    0 -> skip_varint_loginReq(Rest, 0, 0, F@_1, TrUserData);
+	    1 -> skip_64_loginReq(Rest, 0, 0, F@_1, TrUserData);
+	    2 ->
+		skip_length_delimited_loginReq(Rest, 0, 0, F@_1,
+					       TrUserData);
+	    3 ->
+		skip_group_loginReq(Rest, Key bsr 3, 0, F@_1,
+				    TrUserData);
+	    5 -> skip_32_loginReq(Rest, 0, 0, F@_1, TrUserData)
+	  end
+    end;
+dg_read_field_def_loginReq(<<>>, 0, 0, F@_1, _) ->
+    #loginReq{cookie = F@_1}.
+
+d_field_loginReq_cookie(<<1:1, X:7, Rest/binary>>, N,
+			Acc, F@_1, TrUserData)
+    when N < 57 ->
+    d_field_loginReq_cookie(Rest, N + 7, X bsl N + Acc,
+			    F@_1, TrUserData);
+d_field_loginReq_cookie(<<0:1, X:7, Rest/binary>>, N,
+			Acc, _, TrUserData) ->
+    {NewFValue, RestF} = begin
+			   Len = X bsl N + Acc,
+			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
+			   {binary:copy(Bytes), Rest2}
+			 end,
+    dfp_read_field_def_loginReq(RestF, 0, 0, NewFValue,
+				TrUserData).
+
+skip_varint_loginReq(<<1:1, _:7, Rest/binary>>, Z1, Z2,
+		     F@_1, TrUserData) ->
+    skip_varint_loginReq(Rest, Z1, Z2, F@_1, TrUserData);
+skip_varint_loginReq(<<0:1, _:7, Rest/binary>>, Z1, Z2,
+		     F@_1, TrUserData) ->
+    dfp_read_field_def_loginReq(Rest, Z1, Z2, F@_1,
+				TrUserData).
+
+skip_length_delimited_loginReq(<<1:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, TrUserData)
+    when N < 57 ->
+    skip_length_delimited_loginReq(Rest, N + 7,
+				   X bsl N + Acc, F@_1, TrUserData);
+skip_length_delimited_loginReq(<<0:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, TrUserData) ->
+    Length = X bsl N + Acc,
+    <<_:Length/binary, Rest2/binary>> = Rest,
+    dfp_read_field_def_loginReq(Rest2, 0, 0, F@_1,
+				TrUserData).
+
+skip_group_loginReq(Bin, FNum, Z2, F@_1, TrUserData) ->
+    {_, Rest} = read_group(Bin, FNum),
+    dfp_read_field_def_loginReq(Rest, 0, Z2, F@_1,
+				TrUserData).
+
+skip_32_loginReq(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
+		 TrUserData) ->
+    dfp_read_field_def_loginReq(Rest, Z1, Z2, F@_1,
+				TrUserData).
+
+skip_64_loginReq(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
+		 TrUserData) ->
+    dfp_read_field_def_loginReq(Rest, Z1, Z2, F@_1,
+				TrUserData).
 
 d_msg_helloReq(Bin, TrUserData) ->
     dfp_read_field_def_helloReq(Bin, 0, 0,
@@ -456,345 +726,75 @@ skip_64_heartbeatResp(<<_:64, Rest/binary>>, Z1, Z2,
     dfp_read_field_def_heartbeatResp(Rest, Z1, Z2, F@_1,
 				     TrUserData).
 
-d_msg_worldResp(Bin, TrUserData) ->
-    dfp_read_field_def_worldResp(Bin, 0, 0,
-				 id(undefined, TrUserData), TrUserData).
+d_msg_heartbeatReq(Bin, TrUserData) ->
+    dfp_read_field_def_heartbeatReq(Bin, 0, 0, TrUserData).
 
-dfp_read_field_def_worldResp(<<10, Rest/binary>>, Z1,
-			     Z2, F@_1, TrUserData) ->
-    d_field_worldResp_msg(Rest, Z1, Z2, F@_1, TrUserData);
-dfp_read_field_def_worldResp(<<>>, 0, 0, F@_1, _) ->
-    #worldResp{msg = F@_1};
-dfp_read_field_def_worldResp(Other, Z1, Z2, F@_1,
-			     TrUserData) ->
-    dg_read_field_def_worldResp(Other, Z1, Z2, F@_1,
-				TrUserData).
+dfp_read_field_def_heartbeatReq(<<>>, 0, 0, _) ->
+    #heartbeatReq{};
+dfp_read_field_def_heartbeatReq(Other, Z1, Z2,
+				TrUserData) ->
+    dg_read_field_def_heartbeatReq(Other, Z1, Z2,
+				   TrUserData).
 
-dg_read_field_def_worldResp(<<1:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, TrUserData)
-    when N < 32 - 7 ->
-    dg_read_field_def_worldResp(Rest, N + 7, X bsl N + Acc,
-				F@_1, TrUserData);
-dg_read_field_def_worldResp(<<0:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, TrUserData) ->
-    Key = X bsl N + Acc,
-    case Key of
-      10 ->
-	  d_field_worldResp_msg(Rest, 0, 0, F@_1, TrUserData);
-      _ ->
-	  case Key band 7 of
-	    0 ->
-		skip_varint_worldResp(Rest, 0, 0, F@_1, TrUserData);
-	    1 -> skip_64_worldResp(Rest, 0, 0, F@_1, TrUserData);
-	    2 ->
-		skip_length_delimited_worldResp(Rest, 0, 0, F@_1,
-						TrUserData);
-	    3 ->
-		skip_group_worldResp(Rest, Key bsr 3, 0, F@_1,
-				     TrUserData);
-	    5 -> skip_32_worldResp(Rest, 0, 0, F@_1, TrUserData)
-	  end
-    end;
-dg_read_field_def_worldResp(<<>>, 0, 0, F@_1, _) ->
-    #worldResp{msg = F@_1}.
-
-d_field_worldResp_msg(<<1:1, X:7, Rest/binary>>, N, Acc,
-		      F@_1, TrUserData)
-    when N < 57 ->
-    d_field_worldResp_msg(Rest, N + 7, X bsl N + Acc, F@_1,
-			  TrUserData);
-d_field_worldResp_msg(<<0:1, X:7, Rest/binary>>, N, Acc,
-		      _, TrUserData) ->
-    {NewFValue, RestF} = begin
-			   Len = X bsl N + Acc,
-			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
-			   {binary:copy(Bytes), Rest2}
-			 end,
-    dfp_read_field_def_worldResp(RestF, 0, 0, NewFValue,
-				 TrUserData).
-
-skip_varint_worldResp(<<1:1, _:7, Rest/binary>>, Z1, Z2,
-		      F@_1, TrUserData) ->
-    skip_varint_worldResp(Rest, Z1, Z2, F@_1, TrUserData);
-skip_varint_worldResp(<<0:1, _:7, Rest/binary>>, Z1, Z2,
-		      F@_1, TrUserData) ->
-    dfp_read_field_def_worldResp(Rest, Z1, Z2, F@_1,
-				 TrUserData).
-
-skip_length_delimited_worldResp(<<1:1, X:7,
-				  Rest/binary>>,
-				N, Acc, F@_1, TrUserData)
-    when N < 57 ->
-    skip_length_delimited_worldResp(Rest, N + 7,
-				    X bsl N + Acc, F@_1, TrUserData);
-skip_length_delimited_worldResp(<<0:1, X:7,
-				  Rest/binary>>,
-				N, Acc, F@_1, TrUserData) ->
-    Length = X bsl N + Acc,
-    <<_:Length/binary, Rest2/binary>> = Rest,
-    dfp_read_field_def_worldResp(Rest2, 0, 0, F@_1,
-				 TrUserData).
-
-skip_group_worldResp(Bin, FNum, Z2, F@_1, TrUserData) ->
-    {_, Rest} = read_group(Bin, FNum),
-    dfp_read_field_def_worldResp(Rest, 0, Z2, F@_1,
-				 TrUserData).
-
-skip_32_worldResp(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
-		  TrUserData) ->
-    dfp_read_field_def_worldResp(Rest, Z1, Z2, F@_1,
-				 TrUserData).
-
-skip_64_worldResp(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
-		  TrUserData) ->
-    dfp_read_field_def_worldResp(Rest, Z1, Z2, F@_1,
-				 TrUserData).
-
-d_msg_loginReq(Bin, TrUserData) ->
-    dfp_read_field_def_loginReq(Bin, 0, 0,
-				id(undefined, TrUserData), TrUserData).
-
-dfp_read_field_def_loginReq(<<10, Rest/binary>>, Z1, Z2,
-			    F@_1, TrUserData) ->
-    d_field_loginReq_cookie(Rest, Z1, Z2, F@_1, TrUserData);
-dfp_read_field_def_loginReq(<<>>, 0, 0, F@_1, _) ->
-    #loginReq{cookie = F@_1};
-dfp_read_field_def_loginReq(Other, Z1, Z2, F@_1,
-			    TrUserData) ->
-    dg_read_field_def_loginReq(Other, Z1, Z2, F@_1,
-			       TrUserData).
-
-dg_read_field_def_loginReq(<<1:1, X:7, Rest/binary>>, N,
-			   Acc, F@_1, TrUserData)
-    when N < 32 - 7 ->
-    dg_read_field_def_loginReq(Rest, N + 7, X bsl N + Acc,
-			       F@_1, TrUserData);
-dg_read_field_def_loginReq(<<0:1, X:7, Rest/binary>>, N,
-			   Acc, F@_1, TrUserData) ->
-    Key = X bsl N + Acc,
-    case Key of
-      10 ->
-	  d_field_loginReq_cookie(Rest, 0, 0, F@_1, TrUserData);
-      _ ->
-	  case Key band 7 of
-	    0 -> skip_varint_loginReq(Rest, 0, 0, F@_1, TrUserData);
-	    1 -> skip_64_loginReq(Rest, 0, 0, F@_1, TrUserData);
-	    2 ->
-		skip_length_delimited_loginReq(Rest, 0, 0, F@_1,
-					       TrUserData);
-	    3 ->
-		skip_group_loginReq(Rest, Key bsr 3, 0, F@_1,
-				    TrUserData);
-	    5 -> skip_32_loginReq(Rest, 0, 0, F@_1, TrUserData)
-	  end
-    end;
-dg_read_field_def_loginReq(<<>>, 0, 0, F@_1, _) ->
-    #loginReq{cookie = F@_1}.
-
-d_field_loginReq_cookie(<<1:1, X:7, Rest/binary>>, N,
-			Acc, F@_1, TrUserData)
-    when N < 57 ->
-    d_field_loginReq_cookie(Rest, N + 7, X bsl N + Acc,
-			    F@_1, TrUserData);
-d_field_loginReq_cookie(<<0:1, X:7, Rest/binary>>, N,
-			Acc, _, TrUserData) ->
-    {NewFValue, RestF} = begin
-			   Len = X bsl N + Acc,
-			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
-			   {binary:copy(Bytes), Rest2}
-			 end,
-    dfp_read_field_def_loginReq(RestF, 0, 0, NewFValue,
-				TrUserData).
-
-skip_varint_loginReq(<<1:1, _:7, Rest/binary>>, Z1, Z2,
-		     F@_1, TrUserData) ->
-    skip_varint_loginReq(Rest, Z1, Z2, F@_1, TrUserData);
-skip_varint_loginReq(<<0:1, _:7, Rest/binary>>, Z1, Z2,
-		     F@_1, TrUserData) ->
-    dfp_read_field_def_loginReq(Rest, Z1, Z2, F@_1,
-				TrUserData).
-
-skip_length_delimited_loginReq(<<1:1, X:7,
+dg_read_field_def_heartbeatReq(<<1:1, X:7,
 				 Rest/binary>>,
-			       N, Acc, F@_1, TrUserData)
-    when N < 57 ->
-    skip_length_delimited_loginReq(Rest, N + 7,
-				   X bsl N + Acc, F@_1, TrUserData);
-skip_length_delimited_loginReq(<<0:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, TrUserData) ->
-    Length = X bsl N + Acc,
-    <<_:Length/binary, Rest2/binary>> = Rest,
-    dfp_read_field_def_loginReq(Rest2, 0, 0, F@_1,
-				TrUserData).
-
-skip_group_loginReq(Bin, FNum, Z2, F@_1, TrUserData) ->
-    {_, Rest} = read_group(Bin, FNum),
-    dfp_read_field_def_loginReq(Rest, 0, Z2, F@_1,
-				TrUserData).
-
-skip_32_loginReq(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
-		 TrUserData) ->
-    dfp_read_field_def_loginReq(Rest, Z1, Z2, F@_1,
-				TrUserData).
-
-skip_64_loginReq(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
-		 TrUserData) ->
-    dfp_read_field_def_loginReq(Rest, Z1, Z2, F@_1,
-				TrUserData).
-
-d_msg_loginResp(Bin, TrUserData) ->
-    dfp_read_field_def_loginResp(Bin, 0, 0,
-				 id(undefined, TrUserData),
-				 id(undefined, TrUserData),
-				 id(undefined, TrUserData), TrUserData).
-
-dfp_read_field_def_loginResp(<<8, Rest/binary>>, Z1, Z2,
-			     F@_1, F@_2, F@_3, TrUserData) ->
-    d_field_loginResp_result(Rest, Z1, Z2, F@_1, F@_2, F@_3,
-			     TrUserData);
-dfp_read_field_def_loginResp(<<16, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, TrUserData) ->
-    d_field_loginResp_user_id(Rest, Z1, Z2, F@_1, F@_2,
-			      F@_3, TrUserData);
-dfp_read_field_def_loginResp(<<26, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, TrUserData) ->
-    d_field_loginResp_user_name(Rest, Z1, Z2, F@_1, F@_2,
-				F@_3, TrUserData);
-dfp_read_field_def_loginResp(<<>>, 0, 0, F@_1, F@_2,
-			     F@_3, _) ->
-    #loginResp{result = F@_1, user_id = F@_2,
-	       user_name = F@_3};
-dfp_read_field_def_loginResp(Other, Z1, Z2, F@_1, F@_2,
-			     F@_3, TrUserData) ->
-    dg_read_field_def_loginResp(Other, Z1, Z2, F@_1, F@_2,
-				F@_3, TrUserData).
-
-dg_read_field_def_loginResp(<<1:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, TrUserData)
+			       N, Acc, TrUserData)
     when N < 32 - 7 ->
-    dg_read_field_def_loginResp(Rest, N + 7, X bsl N + Acc,
-				F@_1, F@_2, F@_3, TrUserData);
-dg_read_field_def_loginResp(<<0:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, TrUserData) ->
+    dg_read_field_def_heartbeatReq(Rest, N + 7,
+				   X bsl N + Acc, TrUserData);
+dg_read_field_def_heartbeatReq(<<0:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, TrUserData) ->
     Key = X bsl N + Acc,
-    case Key of
-      8 ->
-	  d_field_loginResp_result(Rest, 0, 0, F@_1, F@_2, F@_3,
-				   TrUserData);
-      16 ->
-	  d_field_loginResp_user_id(Rest, 0, 0, F@_1, F@_2, F@_3,
-				    TrUserData);
-      26 ->
-	  d_field_loginResp_user_name(Rest, 0, 0, F@_1, F@_2,
-				      F@_3, TrUserData);
-      _ ->
-	  case Key band 7 of
-	    0 ->
-		skip_varint_loginResp(Rest, 0, 0, F@_1, F@_2, F@_3,
-				      TrUserData);
-	    1 ->
-		skip_64_loginResp(Rest, 0, 0, F@_1, F@_2, F@_3,
-				  TrUserData);
-	    2 ->
-		skip_length_delimited_loginResp(Rest, 0, 0, F@_1, F@_2,
-						F@_3, TrUserData);
-	    3 ->
-		skip_group_loginResp(Rest, Key bsr 3, 0, F@_1, F@_2,
-				     F@_3, TrUserData);
-	    5 ->
-		skip_32_loginResp(Rest, 0, 0, F@_1, F@_2, F@_3,
-				  TrUserData)
-	  end
+    case Key band 7 of
+      0 -> skip_varint_heartbeatReq(Rest, 0, 0, TrUserData);
+      1 -> skip_64_heartbeatReq(Rest, 0, 0, TrUserData);
+      2 ->
+	  skip_length_delimited_heartbeatReq(Rest, 0, 0,
+					     TrUserData);
+      3 ->
+	  skip_group_heartbeatReq(Rest, Key bsr 3, 0, TrUserData);
+      5 -> skip_32_heartbeatReq(Rest, 0, 0, TrUserData)
     end;
-dg_read_field_def_loginResp(<<>>, 0, 0, F@_1, F@_2,
-			    F@_3, _) ->
-    #loginResp{result = F@_1, user_id = F@_2,
-	       user_name = F@_3}.
+dg_read_field_def_heartbeatReq(<<>>, 0, 0, _) ->
+    #heartbeatReq{}.
 
-d_field_loginResp_result(<<1:1, X:7, Rest/binary>>, N,
-			 Acc, F@_1, F@_2, F@_3, TrUserData)
+skip_varint_heartbeatReq(<<1:1, _:7, Rest/binary>>, Z1,
+			 Z2, TrUserData) ->
+    skip_varint_heartbeatReq(Rest, Z1, Z2, TrUserData);
+skip_varint_heartbeatReq(<<0:1, _:7, Rest/binary>>, Z1,
+			 Z2, TrUserData) ->
+    dfp_read_field_def_heartbeatReq(Rest, Z1, Z2,
+				    TrUserData).
+
+skip_length_delimited_heartbeatReq(<<1:1, X:7,
+				     Rest/binary>>,
+				   N, Acc, TrUserData)
     when N < 57 ->
-    d_field_loginResp_result(Rest, N + 7, X bsl N + Acc,
-			     F@_1, F@_2, F@_3, TrUserData);
-d_field_loginResp_result(<<0:1, X:7, Rest/binary>>, N,
-			 Acc, _, F@_2, F@_3, TrUserData) ->
-    {NewFValue, RestF} = {d_enum_LOGINMSG(begin
-					    <<Res:32/signed-native>> = <<(X bsl
-									    N
-									    +
-									    Acc):32/unsigned-native>>,
-					    Res
-					  end),
-			  Rest},
-    dfp_read_field_def_loginResp(RestF, 0, 0, NewFValue,
-				 F@_2, F@_3, TrUserData).
-
-d_field_loginResp_user_id(<<1:1, X:7, Rest/binary>>, N,
-			  Acc, F@_1, F@_2, F@_3, TrUserData)
-    when N < 57 ->
-    d_field_loginResp_user_id(Rest, N + 7, X bsl N + Acc,
-			      F@_1, F@_2, F@_3, TrUserData);
-d_field_loginResp_user_id(<<0:1, X:7, Rest/binary>>, N,
-			  Acc, F@_1, _, F@_3, TrUserData) ->
-    {NewFValue, RestF} = {X bsl N + Acc, Rest},
-    dfp_read_field_def_loginResp(RestF, 0, 0, F@_1,
-				 NewFValue, F@_3, TrUserData).
-
-d_field_loginResp_user_name(<<1:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, TrUserData)
-    when N < 57 ->
-    d_field_loginResp_user_name(Rest, N + 7, X bsl N + Acc,
-				F@_1, F@_2, F@_3, TrUserData);
-d_field_loginResp_user_name(<<0:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, _, TrUserData) ->
-    {NewFValue, RestF} = begin
-			   Len = X bsl N + Acc,
-			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
-			   {binary:copy(Bytes), Rest2}
-			 end,
-    dfp_read_field_def_loginResp(RestF, 0, 0, F@_1, F@_2,
-				 NewFValue, TrUserData).
-
-skip_varint_loginResp(<<1:1, _:7, Rest/binary>>, Z1, Z2,
-		      F@_1, F@_2, F@_3, TrUserData) ->
-    skip_varint_loginResp(Rest, Z1, Z2, F@_1, F@_2, F@_3,
-			  TrUserData);
-skip_varint_loginResp(<<0:1, _:7, Rest/binary>>, Z1, Z2,
-		      F@_1, F@_2, F@_3, TrUserData) ->
-    dfp_read_field_def_loginResp(Rest, Z1, Z2, F@_1, F@_2,
-				 F@_3, TrUserData).
-
-skip_length_delimited_loginResp(<<1:1, X:7,
-				  Rest/binary>>,
-				N, Acc, F@_1, F@_2, F@_3, TrUserData)
-    when N < 57 ->
-    skip_length_delimited_loginResp(Rest, N + 7,
-				    X bsl N + Acc, F@_1, F@_2, F@_3,
-				    TrUserData);
-skip_length_delimited_loginResp(<<0:1, X:7,
-				  Rest/binary>>,
-				N, Acc, F@_1, F@_2, F@_3, TrUserData) ->
+    skip_length_delimited_heartbeatReq(Rest, N + 7,
+				       X bsl N + Acc, TrUserData);
+skip_length_delimited_heartbeatReq(<<0:1, X:7,
+				     Rest/binary>>,
+				   N, Acc, TrUserData) ->
     Length = X bsl N + Acc,
     <<_:Length/binary, Rest2/binary>> = Rest,
-    dfp_read_field_def_loginResp(Rest2, 0, 0, F@_1, F@_2,
-				 F@_3, TrUserData).
+    dfp_read_field_def_heartbeatReq(Rest2, 0, 0,
+				    TrUserData).
 
-skip_group_loginResp(Bin, FNum, Z2, F@_1, F@_2, F@_3,
+skip_group_heartbeatReq(Bin, FNum, Z2, TrUserData) ->
+    {_, Rest} = read_group(Bin, FNum),
+    dfp_read_field_def_heartbeatReq(Rest, 0, Z2,
+				    TrUserData).
+
+skip_32_heartbeatReq(<<_:32, Rest/binary>>, Z1, Z2,
 		     TrUserData) ->
-    {_, Rest} = read_group(Bin, FNum),
-    dfp_read_field_def_loginResp(Rest, 0, Z2, F@_1, F@_2,
-				 F@_3, TrUserData).
+    dfp_read_field_def_heartbeatReq(Rest, Z1, Z2,
+				    TrUserData).
 
-skip_32_loginResp(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
-		  F@_2, F@_3, TrUserData) ->
-    dfp_read_field_def_loginResp(Rest, Z1, Z2, F@_1, F@_2,
-				 F@_3, TrUserData).
-
-skip_64_loginResp(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
-		  F@_2, F@_3, TrUserData) ->
-    dfp_read_field_def_loginResp(Rest, Z1, Z2, F@_1, F@_2,
-				 F@_3, TrUserData).
+skip_64_heartbeatReq(<<_:64, Rest/binary>>, Z1, Z2,
+		     TrUserData) ->
+    dfp_read_field_def_heartbeatReq(Rest, Z1, Z2,
+				    TrUserData).
 
 d_enum_LOGINMSG(1) -> 'SUCCESED';
 d_enum_LOGINMSG(2) -> 'FAILED';
@@ -865,47 +865,19 @@ merge_msgs(Prev, New, Opts)
     when element(1, Prev) =:= element(1, New) ->
     TrUserData = proplists:get_value(user_data, Opts),
     case Prev of
-      #heartbeatReq{} ->
-	  merge_msg_heartbeatReq(Prev, New, TrUserData);
-      #helloReq{} ->
-	  merge_msg_helloReq(Prev, New, TrUserData);
-      #heartbeatResp{} ->
-	  merge_msg_heartbeatResp(Prev, New, TrUserData);
+      #loginResp{} ->
+	  merge_msg_loginResp(Prev, New, TrUserData);
       #worldResp{} ->
 	  merge_msg_worldResp(Prev, New, TrUserData);
       #loginReq{} ->
 	  merge_msg_loginReq(Prev, New, TrUserData);
-      #loginResp{} ->
-	  merge_msg_loginResp(Prev, New, TrUserData)
+      #helloReq{} ->
+	  merge_msg_helloReq(Prev, New, TrUserData);
+      #heartbeatResp{} ->
+	  merge_msg_heartbeatResp(Prev, New, TrUserData);
+      #heartbeatReq{} ->
+	  merge_msg_heartbeatReq(Prev, New, TrUserData)
     end.
-
-merge_msg_heartbeatReq(_Prev, New, _TrUserData) -> New.
-
-merge_msg_helloReq(#helloReq{msg = PFmsg},
-		   #helloReq{msg = NFmsg}, _) ->
-    #helloReq{msg =
-		  if NFmsg =:= undefined -> PFmsg;
-		     true -> NFmsg
-		  end}.
-
-merge_msg_heartbeatResp(#heartbeatResp{unixtime =
-					   PFunixtime},
-			#heartbeatResp{unixtime = NFunixtime}, _) ->
-    #heartbeatResp{unixtime =
-		       if NFunixtime =:= undefined -> PFunixtime;
-			  true -> NFunixtime
-		       end}.
-
-merge_msg_worldResp(#worldResp{msg = PFmsg},
-		    #worldResp{msg = NFmsg}, _) ->
-    #worldResp{msg =
-		   if NFmsg =:= undefined -> PFmsg;
-		      true -> NFmsg
-		   end}.
-
-merge_msg_loginReq(#loginReq{},
-		   #loginReq{cookie = NFcookie}, _) ->
-    #loginReq{cookie = NFcookie}.
 
 merge_msg_loginResp(#loginResp{user_id = PFuser_id,
 			       user_name = PFuser_name},
@@ -922,30 +894,79 @@ merge_msg_loginResp(#loginResp{user_id = PFuser_id,
 		      true -> NFuser_name
 		   end}.
 
+merge_msg_worldResp(#worldResp{msg = PFmsg},
+		    #worldResp{msg = NFmsg}, _) ->
+    #worldResp{msg =
+		   if NFmsg =:= undefined -> PFmsg;
+		      true -> NFmsg
+		   end}.
+
+merge_msg_loginReq(#loginReq{},
+		   #loginReq{cookie = NFcookie}, _) ->
+    #loginReq{cookie = NFcookie}.
+
+merge_msg_helloReq(#helloReq{msg = PFmsg},
+		   #helloReq{msg = NFmsg}, _) ->
+    #helloReq{msg =
+		  if NFmsg =:= undefined -> PFmsg;
+		     true -> NFmsg
+		  end}.
+
+merge_msg_heartbeatResp(#heartbeatResp{unixtime =
+					   PFunixtime},
+			#heartbeatResp{unixtime = NFunixtime}, _) ->
+    #heartbeatResp{unixtime =
+		       if NFunixtime =:= undefined -> PFunixtime;
+			  true -> NFunixtime
+		       end}.
+
+merge_msg_heartbeatReq(_Prev, New, _TrUserData) -> New.
+
 
 verify_msg(Msg) -> verify_msg(Msg, []).
 
 verify_msg(Msg, Opts) ->
     TrUserData = proplists:get_value(user_data, Opts),
     case Msg of
-      #heartbeatReq{} ->
-	  v_msg_heartbeatReq(Msg, [heartbeatReq], TrUserData);
-      #helloReq{} ->
-	  v_msg_helloReq(Msg, [helloReq], TrUserData);
-      #heartbeatResp{} ->
-	  v_msg_heartbeatResp(Msg, [heartbeatResp], TrUserData);
+      #loginResp{} ->
+	  v_msg_loginResp(Msg, [loginResp], TrUserData);
       #worldResp{} ->
 	  v_msg_worldResp(Msg, [worldResp], TrUserData);
       #loginReq{} ->
 	  v_msg_loginReq(Msg, [loginReq], TrUserData);
-      #loginResp{} ->
-	  v_msg_loginResp(Msg, [loginResp], TrUserData);
+      #helloReq{} ->
+	  v_msg_helloReq(Msg, [helloReq], TrUserData);
+      #heartbeatResp{} ->
+	  v_msg_heartbeatResp(Msg, [heartbeatResp], TrUserData);
+      #heartbeatReq{} ->
+	  v_msg_heartbeatReq(Msg, [heartbeatReq], TrUserData);
       _ -> mk_type_error(not_a_known_message, Msg, [])
     end.
 
 
--dialyzer({nowarn_function,v_msg_heartbeatReq/3}).
-v_msg_heartbeatReq(#heartbeatReq{}, _Path, _) -> ok.
+-dialyzer({nowarn_function,v_msg_loginResp/3}).
+v_msg_loginResp(#loginResp{result = F1, user_id = F2,
+			   user_name = F3},
+		Path, _) ->
+    v_enum_LOGINMSG(F1, [result | Path]),
+    if F2 == undefined -> ok;
+       true -> v_type_uint64(F2, [user_id | Path])
+    end,
+    if F3 == undefined -> ok;
+       true -> v_type_string(F3, [user_name | Path])
+    end,
+    ok.
+
+-dialyzer({nowarn_function,v_msg_worldResp/3}).
+v_msg_worldResp(#worldResp{msg = F1}, Path, _) ->
+    if F1 == undefined -> ok;
+       true -> v_type_string(F1, [msg | Path])
+    end,
+    ok.
+
+-dialyzer({nowarn_function,v_msg_loginReq/3}).
+v_msg_loginReq(#loginReq{cookie = F1}, Path, _) ->
+    v_type_string(F1, [cookie | Path]), ok.
 
 -dialyzer({nowarn_function,v_msg_helloReq/3}).
 v_msg_helloReq(#helloReq{msg = F1}, Path, _) ->
@@ -962,29 +983,8 @@ v_msg_heartbeatResp(#heartbeatResp{unixtime = F1}, Path,
     end,
     ok.
 
--dialyzer({nowarn_function,v_msg_worldResp/3}).
-v_msg_worldResp(#worldResp{msg = F1}, Path, _) ->
-    if F1 == undefined -> ok;
-       true -> v_type_string(F1, [msg | Path])
-    end,
-    ok.
-
--dialyzer({nowarn_function,v_msg_loginReq/3}).
-v_msg_loginReq(#loginReq{cookie = F1}, Path, _) ->
-    v_type_string(F1, [cookie | Path]), ok.
-
--dialyzer({nowarn_function,v_msg_loginResp/3}).
-v_msg_loginResp(#loginResp{result = F1, user_id = F2,
-			   user_name = F3},
-		Path, _) ->
-    v_enum_LOGINMSG(F1, [result | Path]),
-    if F2 == undefined -> ok;
-       true -> v_type_uint64(F2, [user_id | Path])
-    end,
-    if F3 == undefined -> ok;
-       true -> v_type_string(F3, [user_name | Path])
-    end,
-    ok.
+-dialyzer({nowarn_function,v_msg_heartbeatReq/3}).
+v_msg_heartbeatReq(#heartbeatReq{}, _Path, _) -> ok.
 
 -dialyzer({nowarn_function,v_enum_LOGINMSG/2}).
 v_enum_LOGINMSG('SUCCESED', _Path) -> ok;
@@ -1064,19 +1064,6 @@ id(X, _TrUserData) -> X.
 get_msg_defs() ->
     [{{enum, 'LOGINMSG'},
       [{'SUCCESED', 1}, {'FAILED', 2}, {'NOTFOUND', 3}]},
-     {{msg, heartbeatReq}, []},
-     {{msg, helloReq},
-      [#field{name = msg, fnum = 1, rnum = 2, type = string,
-	      occurrence = optional, opts = []}]},
-     {{msg, heartbeatResp},
-      [#field{name = unixtime, fnum = 1, rnum = 2,
-	      type = uint32, occurrence = optional, opts = []}]},
-     {{msg, worldResp},
-      [#field{name = msg, fnum = 1, rnum = 2, type = string,
-	      occurrence = optional, opts = []}]},
-     {{msg, loginReq},
-      [#field{name = cookie, fnum = 1, rnum = 2,
-	      type = string, occurrence = required, opts = []}]},
      {{msg, loginResp},
       [#field{name = result, fnum = 1, rnum = 2,
 	      type = {enum, 'LOGINMSG'}, occurrence = required,
@@ -1084,20 +1071,33 @@ get_msg_defs() ->
        #field{name = user_id, fnum = 2, rnum = 3,
 	      type = uint64, occurrence = optional, opts = []},
        #field{name = user_name, fnum = 3, rnum = 4,
-	      type = string, occurrence = optional, opts = []}]}].
+	      type = string, occurrence = optional, opts = []}]},
+     {{msg, worldResp},
+      [#field{name = msg, fnum = 1, rnum = 2, type = string,
+	      occurrence = optional, opts = []}]},
+     {{msg, loginReq},
+      [#field{name = cookie, fnum = 1, rnum = 2,
+	      type = string, occurrence = required, opts = []}]},
+     {{msg, helloReq},
+      [#field{name = msg, fnum = 1, rnum = 2, type = string,
+	      occurrence = optional, opts = []}]},
+     {{msg, heartbeatResp},
+      [#field{name = unixtime, fnum = 1, rnum = 2,
+	      type = uint32, occurrence = optional, opts = []}]},
+     {{msg, heartbeatReq}, []}].
 
 
 get_msg_names() ->
-    [heartbeatReq, helloReq, heartbeatResp, worldResp,
-     loginReq, loginResp].
+    [loginResp, worldResp, loginReq, helloReq,
+     heartbeatResp, heartbeatReq].
 
 
 get_group_names() -> [].
 
 
 get_msg_or_group_names() ->
-    [heartbeatReq, helloReq, heartbeatResp, worldResp,
-     loginReq, loginResp].
+    [loginResp, worldResp, loginReq, helloReq,
+     heartbeatResp, heartbeatReq].
 
 
 get_enum_names() -> ['LOGINMSG'].
@@ -1117,19 +1117,6 @@ fetch_enum_def(EnumName) ->
     end.
 
 
-find_msg_def(heartbeatReq) -> [];
-find_msg_def(helloReq) ->
-    [#field{name = msg, fnum = 1, rnum = 2, type = string,
-	    occurrence = optional, opts = []}];
-find_msg_def(heartbeatResp) ->
-    [#field{name = unixtime, fnum = 1, rnum = 2,
-	    type = uint32, occurrence = optional, opts = []}];
-find_msg_def(worldResp) ->
-    [#field{name = msg, fnum = 1, rnum = 2, type = string,
-	    occurrence = optional, opts = []}];
-find_msg_def(loginReq) ->
-    [#field{name = cookie, fnum = 1, rnum = 2,
-	    type = string, occurrence = required, opts = []}];
 find_msg_def(loginResp) ->
     [#field{name = result, fnum = 1, rnum = 2,
 	    type = {enum, 'LOGINMSG'}, occurrence = required,
@@ -1138,6 +1125,19 @@ find_msg_def(loginResp) ->
 	    type = uint64, occurrence = optional, opts = []},
      #field{name = user_name, fnum = 3, rnum = 4,
 	    type = string, occurrence = optional, opts = []}];
+find_msg_def(worldResp) ->
+    [#field{name = msg, fnum = 1, rnum = 2, type = string,
+	    occurrence = optional, opts = []}];
+find_msg_def(loginReq) ->
+    [#field{name = cookie, fnum = 1, rnum = 2,
+	    type = string, occurrence = required, opts = []}];
+find_msg_def(helloReq) ->
+    [#field{name = msg, fnum = 1, rnum = 2, type = string,
+	    occurrence = optional, opts = []}];
+find_msg_def(heartbeatResp) ->
+    [#field{name = unixtime, fnum = 1, rnum = 2,
+	    type = uint32, occurrence = optional, opts = []}];
+find_msg_def(heartbeatReq) -> [];
 find_msg_def(_) -> error.
 
 

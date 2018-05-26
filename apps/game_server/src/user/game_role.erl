@@ -14,14 +14,17 @@ terminate/2, code_change/3]).
 -define(SERVER, ?MODULE).
 
 -define(SAVE_TIME, 5000).
+-define(CHECK_ONLINE_TIME, 30000).
+-define(CHECK_ONLINE_LIMIT, 3).
 
 start_link([UserId, WsPid]) ->
     gen_server:start_link(?MODULE, [UserId, WsPid], []).
 
 init([UserId, WsPid]) ->
     State = game_mn:get_user_state(UserId),
-    NewState = State#{user_id => UserId, user_pid => self(), ws_pid => WsPid},
+    NewState = State#{user_id => UserId, user_pid => self(), ws_pid => WsPid, check_online_count => 0},
     erlang:send_after(?SAVE_TIME, self(), save_user_state),
+    erlang:send_after(?CHECK_ONLINE_TIME, self(), check_online),
     {ok, NewState}.
 
 handle_call(_Msg, _From, _State) ->
@@ -38,12 +41,26 @@ handle_info(save_user_state, State) ->
     game_mn:save_user_state(State),
     erlang:send_after(?SAVE_TIME, self(), save_user_state),
     {noreply, State};
+handle_info(check_online, #{check_online_count := COC} = State) ->
+    case COC >= ?CHECK_ONLINE_LIMIT of
+        true ->
+            {stop,normal,State};
+        false -> 
+            erlang:send_after(?CHECK_ONLINE_TIME, self(), check_online),
+            {noreply, State#{check_online_count := COC+1}}
+    end;
 handle_info(_Msg, _State) ->
     game_debug:debug(error,"~n~n module *~p* unknow  *INFO* message:  ~p   with *State* ~p ~n~n", [?MODULE, _Msg, _State]),
     {noreply, _State}.
     
-terminate(_Reson, State) ->
+terminate(_Reson, #{user_id := UserId, user_pid := UserPid, ws_pid := WsPid} = State) ->
     game_mn:save_user_state(State),
+    case is_process_alive(WsPid) of
+        true -> exit(WsPid, normal);
+        false -> notdoing
+    end,
+    game_debug:debug(error,"wwwwwww user terminate by user_id: ~p, user_pid: ~p, ws_pid: ~p   wwwwwww ~n"
+            , [UserId, UserPid, WsPid]),
     ok.
 
 code_change(_OldVsn, _State, _Extra) ->

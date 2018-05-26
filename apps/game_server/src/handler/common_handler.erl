@@ -13,7 +13,7 @@ handle(#heartbeatReq{}, #{ws_pid := WsPid} = State) ->
     UnixTime = game_util:unixtime(),
     RecordData = #heartbeatResp{unixtime = UnixTime},
     game_ws_util:ws_send(WsPid, RecordData),
-    {noreply, State};
+    {noreply, State#{check_online_count := 0}};
 
 %% Test proto for Hello World。
 handle(#helloReq{msg = OptionalString}, #{ws_pid := WsPid} = State) ->
