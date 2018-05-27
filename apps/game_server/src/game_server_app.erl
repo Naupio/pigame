@@ -17,10 +17,11 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
+    {ok, SupPid} = game_server_sup:start_link(),
     ok = game_web:network_start(),
     ok = game_mnesia:mnesia_start(),
-    game_server_sup:start_link().
-    
+    ok = game_ets:ets_start(),
+    {ok, SupPid}.
 
 %%--------------------------------------------------------------------
 stop(_State) ->

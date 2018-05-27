@@ -2,6 +2,8 @@
 
 -author("Naupio Z.Y. Huang").
 
+-include("game_user.hrl").
+
 -behaviour(gen_server).
 
 %% callback function
@@ -25,7 +27,7 @@ init([UserId, WsPid]) ->
     NewState = State#{user_id => UserId, user_pid => self(), ws_pid => WsPid, check_online_count => 0},
     erlang:send_after(?SAVE_TIME, self(), save_user_state),
     erlang:send_after(?CHECK_ONLINE_TIME, self(), check_online),
-    {ok, NewState}.
+    {ok, NewState, 0}.
 
 handle_call(_Msg, _From, _State) ->
     game_debug:debug(error,"~n~n module *~p* unknow  *CALL* message:  ~p   which *From*:  ~p   with *State* ~p ~n~n", [?MODULE,_Msg, _From, _State]),
@@ -49,6 +51,9 @@ handle_info(check_online, #{check_online_count := COC} = State) ->
             erlang:send_after(?CHECK_ONLINE_TIME, self(), check_online),
             {noreply, State#{check_online_count := COC+1}}
     end;
+handle_info(timeout, #{user_id := UserId} = _State) ->
+    ets:insert(ets_user_online, #r_online{user_id = UserId, user_pid = self()}),
+    {noreply, _State};
 handle_info(_Msg, _State) ->
     game_debug:debug(error,"~n~n module *~p* unknow  *INFO* message:  ~p   with *State* ~p ~n~n", [?MODULE, _Msg, _State]),
     {noreply, _State}.
@@ -59,6 +64,7 @@ terminate(_Reson, #{user_id := UserId, user_pid := UserPid, ws_pid := WsPid} = S
         true -> exit(WsPid, normal);
         false -> notdoing
     end,
+    ets:delete(ets_user_online, UserId),
     game_debug:debug(error,"wwwwwww user terminate by user_id: ~p, user_pid: ~p, ws_pid: ~p   wwwwwww ~n"
             , [UserId, UserPid, WsPid]),
     ok.

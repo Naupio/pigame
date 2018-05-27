@@ -17,6 +17,15 @@
 
 -define(SERVER, ?MODULE).
 
+-define(SupChildSpecById(Module),
+            #{  id => Module,
+                start => {Module, start_link, []},
+                restart => permanent,
+                shudown => 30000,
+                type => supervisor,
+                modules => [Module]
+            }).
+
 %%====================================================================
 %% API functions
 %%====================================================================
@@ -31,15 +40,10 @@ start_link() ->
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
     {ok, { {one_for_one, 10, 1}, [
-                    #{
-                        id => game_role_sup,
-                        start => {game_role_sup, start_link, []},
-                        restart => permanent,
-                        shudown => 30000,
-                        type => supervisor,
-                        modules => [game_role_sup]
-                     }
-                    ]} }.
+                        ?SupChildSpecById(game_ets_sup),
+                        ?SupChildSpecById(game_role_sup)
+                    ]}
+                }.
 
 %%====================================================================
 %% Internal functions
