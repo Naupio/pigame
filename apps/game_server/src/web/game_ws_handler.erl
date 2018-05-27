@@ -52,14 +52,16 @@ websocket_info(_Info, #{ws_pid := WsPid} = State) ->
     game_debug:debug(error,"Wwwwwwww WsPid: ~p, websocket unkown info  wwwwwww ~n", [WsPid]),
     {reply, {text, <<"unkown info !">>}, State}.
 
-terminate(_Info, _Req, #{ws_pid := WsPid, user_pid := UserPid, logined := IsLogined} = _State) ->
-    case {IsLogined, is_pid(UserPid)} of
-        {true,true} ->
-            case is_process_alive(UserPid) of
-                true -> exit(UserPid, normal);
-                _ -> notdoing
-            end;
-        _ -> notdoing
-    end, 
+terminate(_Info, _Req, #{ws_pid := WsPid
+        % , user_pid := UserPid, logined := IsLogined
+        } = _State) ->
+    % case {IsLogined, is_pid(UserPid)} of
+    %     {true,true} ->
+    %         case is_process_alive(UserPid) of
+    %             true -> exit(UserPid, normal);
+    %             _ -> notdoing
+    %         end;
+    %     _ -> notdoing
+    % end, 
     game_debug:debug(error,"wwwwwww WsPid: ~p, websocket terminated   wwwwwww ~n", [WsPid]),
     ok.

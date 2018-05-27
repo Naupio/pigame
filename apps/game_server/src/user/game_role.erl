@@ -28,7 +28,9 @@ init([UserId, WsPid]) ->
     erlang:send_after(?SAVE_TIME, self(), save_user_state),
     erlang:send_after(?CHECK_ONLINE_TIME, self(), check_online),
     {ok, NewState, 0}.
-
+    
+handle_call({reconnect, WsPid}, _From, State) ->
+    {noreply, State#{check_online_count := 0, ws_pids := WsPid}};
 handle_call(_Msg, _From, _State) ->
     game_debug:debug(error,"~n~n module *~p* unknow  *CALL* message:  ~p   which *From*:  ~p   with *State* ~p ~n~n", [?MODULE,_Msg, _From, _State]),
     {noreply, _State}.
