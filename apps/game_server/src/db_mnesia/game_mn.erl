@@ -31,8 +31,8 @@ get_user_state(UserId) ->
     case catch mnesia:dirty_read(r_user, UserId) of
             [#r_user{user_id = UserId, user_state = UserState}|_] ->
                 UserState;
-            _ -> 
-                #{}
+            _ -> %% first login
+                ?default_user_state(UserId)
     end.
 
 save_user_state(#{user_id := UserId} = UserState) ->

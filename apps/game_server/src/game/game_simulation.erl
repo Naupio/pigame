@@ -5,11 +5,11 @@
 -include("common_pb.hrl").
 
 -export([   
-    multi_user_login/1,
+    multi_user_start/1,
     create_login_user/1
 ]).
 
-multi_user_login(Num) ->
+multi_user_start(Num) ->
     lists:foreach(fun(Index) -> 
                         spawn(fun() -> create_login_user(integer_to_list(Index)) end) 
                     end
@@ -24,6 +24,7 @@ create_login_user(Cookie) ->
     UserPid = maps:get(user_pid, NewState),
     WsPid = maps:get(ws_pid, NewState),
     erlang:send_after(5000, self(), heartbeat),
+
     loop_receive(Cookie,UserPid,WsPid).
 
 loop_receive(Cookie,UserPid,WsPid) ->
@@ -33,8 +34,17 @@ loop_receive(Cookie,UserPid,WsPid) ->
             gen_server:cast(UserPid, {cmd_routing, 101, HeartbeatBin}),
             erlang:send_after(5000, self(), heartbeat),
             loop_receive(Cookie,UserPid,WsPid);
+        {send_binary, <<Cmd:16, _Bin/binary>> = Msg} ->
+            case Cmd of
+                102 ->
+                    notdoing;
+                _ ->
+                    game_debug:debug(error, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: ~p !!!!!!!!!!!!!! ~n"
+                        , [Cookie, Msg, time()])
+            end,
+            loop_receive(Cookie,UserPid,WsPid);
         Msg ->
-            game_debug:debug(info, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: ~p !!!!!!!!!!!!!! ~n"
+            game_debug:debug(error, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: ~p !!!!!!!!!!!!!! ~n"
                         , [Cookie, Msg, time()]),
             loop_receive(Cookie,UserPid,WsPid)
     end.

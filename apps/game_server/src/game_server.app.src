@@ -7,9 +7,9 @@
    [kernel,
     stdlib,
     sasl,
-    game_protobuf,
-    % lager,
-    cowboy
+    lager,
+    cowboy,
+    game_protobuf
    ]},
   {env,[]},
   {modules, []},

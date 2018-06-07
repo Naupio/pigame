@@ -27,5 +27,6 @@ handle(#helloReq{msg = OptionalString}, #{ws_pid := WsPid} = State) ->
     end,
     {noreply, State};
 
-handle(_Record, State) ->
+handle(Record, State) ->
+    game_debug:debug(error,"~n~n module *~p* unknow  *Record* message:  ~p   with *State* ~p ~n~n", [?MODULE,Record, State]),   
     {noreply, State}.

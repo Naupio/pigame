@@ -1,3 +1,4 @@
+{"1.1.0",
 [{<<"cowboy">>,
   {git,"https://github.com/ninenines/cowboy",
        {ref,"28d3515d716d32d1700fa21e904c613c139d4019"}},
@@ -6,6 +7,7 @@
   {git,"https://github.com/ninenines/cowlib",
        {ref,"56a3fee151340212c1b7a92344e4ece07fc15010"}},
   1},
+ {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.9">>},1},
  {<<"gproc">>,
   {git,"https://github.com/uwiger/gproc",
        {ref,"c4cc57fc933d79b72cf2f82a6530877737c7e645"}},
@@ -13,6 +15,10 @@
  {<<"jsx">>,
   {git,"https://github.com/talentdeficit/jsx",
        {ref,"fc2a001073f2300ba38427c23e83d5673c020542"}},
+  0},
+ {<<"lager">>,
+  {git,"https://github.com/erlang-lager/lager",
+       {ref,"222293143f4c3379b09d83658c42787303662b23"}},
   0},
  {<<"poolboy">>,
   {git,"https://github.com/devinus/poolboy",
@@ -25,4 +31,8 @@
  {<<"recon">>,
   {git,"https://github.com/ferd/recon",
        {ref,"e0c3614334589e375f8b1492f404e4b764fe35e7"}},
-  0}].
+  0}]}.
+[
+{pkg_hash,[
+ {<<"goldrush">>, <<"F06E5D5F1277DA5C413E84D5A2924174182FB108DABB39D5EC548B27424CD106">>}]}
+].

@@ -21,11 +21,9 @@ login_handler(#loginReq{cookie = Cookie}, #{ws_pid := WsPid} = WsState) ->
     UserId = game_mn:get_user_id_by_account(Cookie),
     case ets:lookup(ets_user_online, UserId) of
         [#r_online{user_id=UserId, user_pid=UserPid}] ->
-            game_ws_util:ws_send(WsPid, #loginResp{result='SUCCESED', user_id = UserId, user_name = Cookie}),
             gen_sever:call(UserPid, {reconnect, WsPid}),
             WsState#{logined => true, user_pid => UserPid};
         [] ->
             {ok, UserPid} = supervisor:start_child(game_role_sup, [[UserId, WsPid]]),
-            game_ws_util:ws_send(WsPid, #loginResp{result='SUCCESED', user_id = UserId, user_name = Cookie}),
             WsState#{logined => true, user_pid => UserPid}
     end.

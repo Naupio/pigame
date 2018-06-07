@@ -3,7 +3,7 @@ syntax = "proto2";
 package common.proto;
 
 enum LOGINMSG {
-    SUCCESED = 1;
+    SUCCEEDED = 1;
     FAILED = 2;
     NOTFOUND = 3;
 }
