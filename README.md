@@ -1,5 +1,5 @@
-# game_server
-An simple game server with Erlang.
+# piogame
+piogame is a game server template for Erlang.
 
 # LICENSE
 - The [MIT License](./LICENSE)  
