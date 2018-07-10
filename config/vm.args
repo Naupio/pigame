@@ -4,5 +4,8 @@
 
 -boot start_sasl
 
+%% using multi polltreads and multi pollsets
++IOt 8 +IOp 8
+
 +K true
 +A30
