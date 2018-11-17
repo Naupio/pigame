@@ -18,7 +18,7 @@
   0},
  {<<"lager">>,
   {git,"https://github.com/erlang-lager/lager",
-       {ref,"37b7facc410daabf3ebd50bac8da7e0e0f3cc0e2"}},
+       {ref,"69b4ada2341b8ab2cf5c8e464ac936e5e4a9f62b"}},
   0},
  {<<"poolboy">>,
   {git,"https://github.com/devinus/poolboy",
