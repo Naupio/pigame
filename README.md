@@ -1,8 +1,11 @@
-# piogame
+# PioGame
 [![Build Status](https://www.travis-ci.org/Naupio/piogame.svg?branch=master)](https://www.travis-ci.org/Naupio/piogame)
 
-piogame is a game server template for Erlang.
+PioGame is a game server template for Erlang.
 
+
+# QQ group
+Group ID: **298923900**
 
 # LICENSE
 - The [MIT License](./LICENSE)  
