@@ -1,7 +1,7 @@
-# PioGame
-[![Build Status](https://www.travis-ci.org/Naupio/piogame.svg?branch=master)](https://www.travis-ci.org/Naupio/piogame)
+# pigame
+[![Build Status](https://www.travis-ci.org/Naupio/pigame.svg?branch=master)](https://www.travis-ci.org/Naupio/pigame)
 
-PioGame is a game server template for Erlang.
+pigame is a game server template for Erlang.
 
 
 # QQ group
