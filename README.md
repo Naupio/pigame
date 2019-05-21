@@ -13,3 +13,12 @@ Group ID: **298923900**
 
 # Build
 `$ rebar3 compile`
+
+# Run Shell
+`$ rebar3 shell`
+
+# Release
+`$ rebar3 as prod release`
+
+# Run Release
+`_build/prod/rel/game_server/bin/game_server foreground`
