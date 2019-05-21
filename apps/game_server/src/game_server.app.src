@@ -9,12 +9,18 @@
     sasl,
     lager,
     cowboy,
-    game_protobuf
+    game_header,
+    game_protobuf,
+    game_cache,
+    game_mnesia,
+    game_role,
+    game_web,
+    game_handler
    ]},
   {env,[]},
   {modules, []},
 
   {maintainers, []},
-  {licenses, ["MIT"]},
+  {licenses, ["Apache 2.0"]},
   {links, []}
  ]}.

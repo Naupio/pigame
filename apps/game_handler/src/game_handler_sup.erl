@@ -1,13 +1,11 @@
 %%%-------------------------------------------------------------------
-%% @doc game_server top level supervisor.
+%% @doc game_handler top level supervisor.
 %% @end
 %%%-------------------------------------------------------------------
 
--module(game_server_sup).
+-module(game_handler_sup).
 
 -behaviour(supervisor).
-
--author("Nuapio Z.Y. Huang").
 
 %% API
 -export([start_link/0]).
@@ -16,7 +14,6 @@
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
-
 
 %%====================================================================
 %% API functions
@@ -29,9 +26,12 @@ start_link() ->
 %% Supervisor callbacks
 %%====================================================================
 
+%% Child :: #{id => Id, start => {M, F, A}}
+%% Optional keys are restart, shutdown, type, modules.
+%% Before OTP 18 tuples must be used to specify a child. e.g.
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-    {ok, { {one_for_one, 10, 1}, []} }.
+    {ok, {{one_for_all, 0, 1}, []}}.
 
 %%====================================================================
 %% Internal functions

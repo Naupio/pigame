@@ -3,7 +3,7 @@
 -author("Naupio Z.Y. Huang").
 
 -include("game_user.hrl").
--include("common_pb.hrl").
+-include_lib("common_pb.hrl") .
 
 -behaviour(gen_server).
 

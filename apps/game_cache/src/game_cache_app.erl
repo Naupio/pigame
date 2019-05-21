@@ -1,11 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc game_server public API
+%% @doc game_cache public API
 %% @end
 %%%-------------------------------------------------------------------
 
--module(game_server_app).
-
--author("Nuapio Z.Y. Huang").
+-module(game_cache_app).
 
 -behaviour(application).
 
@@ -17,11 +15,12 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
-    {ok, SupPid} = game_server_sup:start_link(),
+    {ok, SupPid} = game_cache_sup:start_link(),
 
-    % any start hear
-
+    ok = game_ets:ets_start(),
+    
     {ok, SupPid}.
+    
 
 %%--------------------------------------------------------------------
 stop(_State) ->

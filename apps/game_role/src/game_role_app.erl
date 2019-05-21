@@ -1,11 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc game_server public API
+%% @doc game_role public API
 %% @end
 %%%-------------------------------------------------------------------
 
--module(game_server_app).
-
--author("Nuapio Z.Y. Huang").
+-module(game_role_app).
 
 -behaviour(application).
 
@@ -17,11 +15,7 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
-    {ok, SupPid} = game_server_sup:start_link(),
-
-    % any start hear
-
-    {ok, SupPid}.
+    game_role_sup:start_link().
 
 %%--------------------------------------------------------------------
 stop(_State) ->

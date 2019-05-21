@@ -8,8 +8,8 @@ pigame is a game server template for Erlang.
 Group ID: **298923900**
 
 # LICENSE
-- The [MIT License](./LICENSE)  
-- Copyright (c) 2018 [Naupio Z.Y Huang](https://github.com/Naupio) 
+- [Apache 2.0](./LICENSE)  
+- Copyright (c) 2018-2019 [Naupio Z.Y Huang](https://github.com/Naupio) 
 
 # Build
 `$ rebar3 compile`
