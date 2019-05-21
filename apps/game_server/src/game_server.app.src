@@ -11,6 +11,7 @@
     cowboy,
     game_header,
     game_protobuf,
+    game_config,
     game_cache,
     game_mnesia,
     game_role,
