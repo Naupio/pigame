@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc game_protobuf public API
+%% @doc game_logger public API
 %% @end
 %%%-------------------------------------------------------------------
 
--module(game_protobuf_app).
+-module(game_logger_app).
 
 -author("Nuapio Z.Y. Huang").
 
@@ -17,7 +17,7 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
-    game_protobuf_sup:start_link().
+    game_logger_sup:start_link().
 
 %%--------------------------------------------------------------------
 stop(_State) ->

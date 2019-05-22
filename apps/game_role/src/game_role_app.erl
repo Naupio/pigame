@@ -5,6 +5,8 @@
 
 -module(game_role_app).
 
+-author("Nuapio Z.Y. Huang").
+
 -behaviour(application).
 
 %% Application callbacks

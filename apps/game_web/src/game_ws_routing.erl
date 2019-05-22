@@ -1,4 +1,4 @@
--module(game_routing).
+-module(game_ws_routing).
 
 -author("Naupio Z.Y. Huang").
 
@@ -7,14 +7,14 @@
 ]).
 
 cmd_routing(Cmd, Bin, #{ws_pid := WsPid} = State) ->
-    Module = game_massage:decoder_for(Cmd),
+    ProtocolModule = game_massage:decoder_for(Cmd),
     RecordName = game_massage:msg_type(Cmd),
-    RecordData = Module:decode_msg(Bin, RecordName),
+    RecordData = ProtocolModule:decode_msg(Bin, RecordName),
     case Cmd of
         101 ->
             notdoing;
         _ ->
             game_debug:debug(error,"wwwwwww WsPid : ~p, protobuf recevie: ~p ~n  wwwwwww", [WsPid, RecordData])
     end,
-    NewModule = list_to_atom(lists:concat([hd(string:split(atom_to_list(Module),"_",trailing)), "_handler"])),
-    NewModule:handle(RecordData, State).
+    HandlerModule = list_to_atom(lists:concat([hd(string:split(atom_to_list(ProtocolModule),"_",trailing)), "_handler"])),
+    HandlerModule:handle(RecordData, State).

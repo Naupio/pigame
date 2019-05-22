@@ -41,7 +41,7 @@ handle_call(_Msg, _From, _State) ->
     {noreply, _State}.
 
 handle_cast({cmd_routing, Cmd, Bin}, State) ->
-    game_routing:cmd_routing(Cmd, Bin, State);
+    game_ws_routing:cmd_routing(Cmd, Bin, State);
 handle_cast({change_gold, ChangeGold}, #{user_gold := UserGold} = State) ->
     {noreply, State#{user_gold := UserGold+ChangeGold}};
 handle_cast(_Msg, _State) ->

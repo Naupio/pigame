@@ -5,6 +5,8 @@
 
 -module(game_cache_app).
 
+-author("Nuapio Z.Y. Huang").
+
 -behaviour(application).
 
 %% Application callbacks

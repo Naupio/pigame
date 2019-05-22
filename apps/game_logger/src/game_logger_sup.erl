@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc game_mnesia top level supervisor.
+%% @doc game_logger top level supervisor.
 %% @end
 %%%-------------------------------------------------------------------
 
--module(game_mnesia_sup).
+-module(game_logger_sup).
 
 -author("Nuapio Z.Y. Huang").
 

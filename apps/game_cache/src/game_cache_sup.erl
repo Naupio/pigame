@@ -5,6 +5,8 @@
 
 -module(game_cache_sup).
 
+-author("Nuapio Z.Y. Huang").
+
 -behaviour(supervisor).
 
 -include("game_sup.hrl").

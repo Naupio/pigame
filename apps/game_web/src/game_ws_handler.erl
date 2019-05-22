@@ -3,11 +3,11 @@
 -author("Nuapio Z.Y. Huang").
 
 -export([
-        init/2
-    ,   websocket_init/1
-    ,   websocket_handle/2
-    ,   websocket_info/2
-    ,   terminate/3
+         init/2
+        ,websocket_init/1
+        ,websocket_handle/2
+        ,websocket_info/2
+        ,terminate/3
     ]).
 
 init(Req, _) ->
@@ -38,7 +38,7 @@ websocket_handle({binary, Req}, #{logined := IsLogined} = State) ->
             gen_server:cast(UserPid, {cmd_routing, Cmd, Bin}),
             {ok, State};
         false ->
-            NewState = game_login:login(Cmd, Bin, State),
+            NewState = game_ws_login:login(Cmd, Bin, State),
             {ok, NewState}
     end;
 

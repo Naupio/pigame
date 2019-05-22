@@ -19,7 +19,7 @@ create_login_user(Cookie) ->
     Cmd = 11,
     LoginBin = common_pb:encode_msg(#loginReq{cookie = Cookie}),
     State = #{ws_pid => self()},
-    NewState = game_login:login(Cmd, LoginBin, State),
+    NewState = game_ws_login:login(Cmd, LoginBin, State),
 
     UserPid = maps:get(user_pid, NewState),
     WsPid = maps:get(ws_pid, NewState),

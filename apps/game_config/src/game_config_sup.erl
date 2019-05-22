@@ -5,6 +5,8 @@
 
 -module(game_config_sup).
 
+-author("Nuapio Z.Y. Huang").
+
 -behaviour(supervisor).
 
 %% API
