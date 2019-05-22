@@ -5,7 +5,8 @@
   {mod, {game_role_app, []}},
   {applications,
    [kernel,
-    stdlib
+    stdlib,
+    game_protobuf
    ]},
   {env,[]},
   {modules, []},

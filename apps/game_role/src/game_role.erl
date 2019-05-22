@@ -3,7 +3,7 @@
 -author("Naupio Z.Y. Huang").
 
 -include("game_user.hrl").
--include_lib("common_pb.hrl") .
+-include("common_pb.hrl") .
 
 -behaviour(gen_server).
 
@@ -62,6 +62,10 @@ handle_info(timeout, #{user_id := UserId, user_name := UserName, ws_pid := WsPid
     ets:insert(ets_user_online, #r_online{user_id = UserId, user_pid = self()}),
     game_ws_util:ws_send(WsPid, #loginResp{result='SUCCEEDED', user_id = UserId, user_name = UserName}),
     {noreply, _State};
+handle_info(save_user_state, State) ->
+    game_mn:save_user_state(State),
+    erlang:send_after(?SAVE_TIME, self(), save_user_state),
+    {noreply, State};
 handle_info(_Msg, _State) ->
     game_debug:debug(error,"~n~n module *~p* unknow  *INFO* message:  ~p   with *State* ~p ~n~n", [?MODULE, _Msg, _State]),
     {noreply, _State}.
