@@ -16,8 +16,4 @@ _build
 .idea
 *.iml
 rebar3.crashdump
-mf_logs/*
-!mf_logs/README.md
-Mnesia.*
-mnesia_db_data
-.DS_Store
+*~

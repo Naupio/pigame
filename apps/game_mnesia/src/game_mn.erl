@@ -30,7 +30,7 @@ put_user_id_by_account(Cookie, UserId) ->
 get_user_state(UserId) ->
     case catch mnesia:dirty_read(r_user, UserId) of
             [#r_user{user_id = UserId, user_state = UserState}|_] ->
-                UserState;
+                maps:merge(?default_user_state(UserId), UserState);
             _ -> %% first login
                 ?default_user_state(UserId)
     end.

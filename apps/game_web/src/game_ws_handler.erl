@@ -31,7 +31,7 @@ websocket_handle({text, Req}, #{ws_pid := WsPid} = State) ->
     {reply, {text, Resp}, State};
 
 websocket_handle({binary, Req}, #{logined := IsLogined} = State) ->
-    <<Cmd:16, Bin/binary>> = Req,
+    <<Cmd:16/little, Bin/binary>> = Req,
     case IsLogined of
         true ->
             UserPid = maps:get(user_pid, State),

@@ -11,7 +11,7 @@ ws_send(WsPid, RecordData) ->
     Cmd = game_massage:msg_code(RecordName),
     Module = game_massage:decoder_for(Cmd),
     Bin = Module:encode_msg(RecordData),
-    BinRecordData = <<Cmd:16, Bin/binary>>,
+    BinRecordData = <<Cmd:16/little, Bin/binary>>,
     case Cmd of
         102 ->
             notdoing;

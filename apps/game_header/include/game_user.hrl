@@ -15,8 +15,17 @@
     user_pid = none
 }).
 
--define(default_gold, 1000000).
--define(default_image, rand:uniform(6)).
--define(default_user_state(UserId),   #{user_id => UserId, user_name => integer_to_list(UserId)
-                                , user_pid => none, ws_pid => none, user_image => ?default_image
-                                , user_gold => ?default_gold, check_online_count => 0}).
+-define(default_img_id, rand:uniform(6)).
+-define(default_user_state(UserId),
+    #{user_id => UserId
+    , user_name => integer_to_list(UserId)
+    , user_img_id => ?default_img_id
+    , user_rank => 0
+    , user_gold => 0
+    , user_diamond => 0
+    , user_account_experience => 0
+    , user_hero_experience => 0
+    , user_pid => none
+    , ws_pid => none
+    , check_online_count => 0}
+).

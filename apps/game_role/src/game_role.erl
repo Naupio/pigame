@@ -33,13 +33,13 @@ init([UserId, WsPid]) ->
     erlang:send_after(?CHECK_ONLINE_TIME, self(), check_online),
     {ok, NewState, 0}.
     
-handle_call({reconnect, WsPid}, _From, #{user_id := UserId, user_name := UserName} = State) ->
-    game_ws_util:ws_send(WsPid, #loginResp{result='SUCCEEDED', user_id = UserId, user_name = UserName}),
-    {noreply, State#{check_online_count := 0, ws_pid := WsPid}};
 handle_call(_Msg, _From, _State) ->
     game_debug:debug(error,"~n~n module *~p* unknow  *CALL* message:  ~p   which *From*:  ~p   with *State* ~p ~n~n", [?MODULE,_Msg, _From, _State]),
     {noreply, _State}.
 
+handle_cast({reconnect, WsPid}, #{user_id := UserId} = State) ->
+    game_ws_util:ws_send(WsPid, #loginResp{result='SUCCEEDED', user_id = UserId}),
+    {noreply, State#{check_online_count := 0, ws_pid := WsPid}};
 handle_cast({cmd_routing, Cmd, Bin}, State) ->
     game_ws_routing:cmd_routing(Cmd, Bin, State);
 handle_cast({change_gold, ChangeGold}, #{user_gold := UserGold} = State) ->
@@ -58,10 +58,14 @@ handle_info(check_online, #{check_online_count := COC} = State) ->
             erlang:send_after(?CHECK_ONLINE_TIME, self(), check_online),
             {noreply, State#{check_online_count := COC+1}}
     end;
-handle_info(timeout, #{user_id := UserId, user_name := UserName, ws_pid := WsPid} = _State) ->
+%% 等级初始化传回前端
+handle_info(timeout, State) ->
+    #{user_id := UserId,
+      ws_pid := WsPid
+    } = State,
     ets:insert(ets_user_online, #r_online{user_id = UserId, user_pid = self()}),
-    game_ws_util:ws_send(WsPid, #loginResp{result='SUCCEEDED', user_id = UserId, user_name = UserName}),
-    {noreply, _State};
+    game_ws_util:ws_send(WsPid, #loginResp{result='SUCCEEDED', user_id = UserId}),
+    {noreply, State};
 handle_info(save_user_state, State) ->
     game_mn:save_user_state(State),
     erlang:send_after(?SAVE_TIME, self(), save_user_state),

@@ -34,7 +34,7 @@ loop_receive(Cookie,UserPid,WsPid) ->
             gen_server:cast(UserPid, {cmd_routing, 101, HeartbeatBin}),
             erlang:send_after(5000, self(), heartbeat),
             loop_receive(Cookie,UserPid,WsPid);
-        {send_binary, <<Cmd:16, _Bin/binary>> = Msg} ->
+        {send_binary, <<Cmd:16/little, _Bin/binary>> = Msg} ->
             case Cmd of
                 102 ->
                     notdoing;
