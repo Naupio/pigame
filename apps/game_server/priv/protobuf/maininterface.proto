@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package maininterface.proto;
+
+message userInfoReq {
+    uint64 user_id = 1;
+}
+message userInfoResp {
+    uint64 user_id = 1;
+    string user_name = 2;
+    uint32 user_img_id = 3;
+    uint32 user_rank = 4;
+    uint64 user_account_experience = 5;
+    uint64 user_gold = 6;
+    uint64 user_diamond = 7;
+}

@@ -20,6 +20,7 @@ start(_StartType, _StartArgs) ->
     {ok, SupPid} = game_server_sup:start_link(),
 
     % any start hear
+    ok = game_ets:ets_start(),
 
     {ok, SupPid}.
 

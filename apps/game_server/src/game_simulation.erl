@@ -3,6 +3,7 @@
 -author("Naupio Z.Y. Huang").
 
 -include("common_pb.hrl").
+-include("maininterface_pb.hrl").
 
 -export([   
     multi_user_start/1,
@@ -39,12 +40,12 @@ loop_receive(Cookie,UserPid,WsPid) ->
                 102 ->
                     notdoing;
                 _ ->
-                    game_debug:debug(error, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: ~p !!!!!!!!!!!!!! ~n"
+                    game_debug:debug(info, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: ~p !!!!!!!!!!!!!! ~n"
                         , [Cookie, Msg, time()])
             end,
             loop_receive(Cookie,UserPid,WsPid);
         Msg ->
-            game_debug:debug(error, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: ~p !!!!!!!!!!!!!! ~n"
+            game_debug:debug(info, "~n !!!!!!!!!!!!!!    user: ~p, receive msg: ~p , time: ~p !!!!!!!!!!!!!! ~n"
                         , [Cookie, Msg, time()]),
             loop_receive(Cookie,UserPid,WsPid)
     end.

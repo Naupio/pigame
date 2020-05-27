@@ -1,15 +1,13 @@
 %%%-------------------------------------------------------------------
-%% @doc game_server top level supervisor.
+%% @doc game_mnesia top level supervisor.
 %% @end
 %%%-------------------------------------------------------------------
 
--module(game_server_sup).
-
--behaviour(supervisor).
+-module(game_mnesia_sup).
 
 -author("Nuapio Z.Y. Huang").
 
--include("game_sup.hrl").
+-behaviour(supervisor).
 
 %% API
 -export([start_link/0]).
@@ -18,7 +16,6 @@
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
-
 
 %%====================================================================
 %% API functions
@@ -31,14 +28,13 @@ start_link() ->
 %% Supervisor callbacks
 %%====================================================================
 
+%% Child :: #{id => Id, start => {M, F, A}}
+%% Optional keys are restart, shutdown, type, modules.
+%% Before OTP 18 tuples must be used to specify a child. e.g.
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-    {ok, { {one_for_one, 10, 1}, [
-        ?SupChildSpecById(game_ets_sup),
-        ?SupChildSpecById(game_mnesia_sup),
-        ?SupChildSpecById(game_role_sup),
-        ?SupChildSpecById(game_web_sup)
-    ]} }.
+    ok = game_mnesia:mnesia_start(),
+    {ok, {{one_for_all, 0, 1}, []}}.
 
 %%====================================================================
 %% Internal functions

@@ -4,12 +4,16 @@
 pigame is a game server template for Erlang.
 
 
-# QQ group
+# Telegram Group
+[OpenBeam:](https://t.me/joinchat/FO_0mxQWbf90Z-2rjCscfw)  
+`https://t.me/joinchat/FO_0mxQWbf90Z-2rjCscfw`
+
+# QQ Group
 Group ID: **298923900**
 
 # LICENSE
 - [Apache 2.0](./LICENSE)  
-- Copyright (c) 2018-2019 [Naupio Z.Y Huang](https://github.com/Naupio) 
+- Copyright (c) 2018-2020 [Naupio Z.Y Huang](https://github.com/Naupio) 
 
 # Build
 `$ rebar3 compile`

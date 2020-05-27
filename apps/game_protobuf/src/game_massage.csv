@@ -1,8 +1,0 @@
-11,loginReq,common
-12,loginResp,common
-
-101,heartbeatReq,common
-102,heartbeatResp,common
-
-1001,helloReq,common
-1002,worldResp,common

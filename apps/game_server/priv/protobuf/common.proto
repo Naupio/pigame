@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package common.proto;
+
+enum LoginStatus {
+    FAILED = 0;
+    SUCCEEDED = 1;
+    NOTFOUND = 2;
+}
+
+// 登录协议
+message loginReq {
+    string cookie = 1;
+}
+
+message loginResp {
+    LoginStatus result = 1;
+    uint64 user_id = 2; 
+}
+
+// ***************************
+// * use for logined
+// ***************************
+
+// hello-world test
+message helloReq {
+    string msg = 1 ;
+}
+message worldResp {
+    string msg = 1;
+}
+
+// hearbeat protocol，30 secends one time
+message heartbeatReq {}
+
+message heartbeatResp {
+    uint64 unixtime = 1;
+}
