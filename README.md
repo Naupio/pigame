@@ -1,7 +1,7 @@
 # pigame
 [![Build Status](https://www.travis-ci.org/Naupio/pigame.svg?branch=master)](https://www.travis-ci.org/Naupio/pigame)
 
-pigame is a game server template for Erlang.
+Just a game server template for Erlang/OTP.
 
 
 # Telegram Group
